@@ -2,9 +2,7 @@ import sys
 import os
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt 
-import gdal
-import gdalconst
+import matplotlib.pyplot as plt
 from scipy.cluster.vq import kmeans2
 import image
 

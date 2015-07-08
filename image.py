@@ -74,6 +74,9 @@ def plot3DClusters(data, centroids, label):
 	ax.scatter(centroids[:,0], centroids[:,1], centroids[:,2], c='r')
 	plt.show()
 
+def plotRaster():
+	""" Graph the clusters by color on the original raster """
+	pass
 
 def pyramid(image, N):
 	""" Returns a smaller image by a factor of N pyramids """
