@@ -67,11 +67,11 @@ def plot3DClusters(data, centroids, label):
 	# plot the data points
 	ax.scatter(data[label==0,0], data[label==0,1], data[label==0,2], c='b')
 	ax.scatter(data[label==1,0], data[label==1,1], data[label==1,2], c='g')
-	ax.scatter(data[label==2,0], data[label==2,1], data[label==2,2], c='r')
-	ax.scatter(data[label==3,0], data[label==3,1], data[label==3,2], c='m')
+	#ax.scatter(data[label==2,0], data[label==2,1], data[label==2,2], c='r')
+	#ax.scatter(data[label==3,0], data[label==3,1], data[label==3,2], c='m')
 
 	# plot the centroids
-	ax.scatter(centroids[:,0], centroids[:,1], centroids[:,2], c='c')
+	ax.scatter(centroids[:,0], centroids[:,1], centroids[:,2], c='r')
 	plt.show()
 
 

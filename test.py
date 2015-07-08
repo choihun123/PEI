@@ -25,3 +25,19 @@ print test(0., 255.)
 print test(20., 100.)
 print test(100., 20.)
 print test(0.,0.)
+
+
+"""
+Hold this Code
+	# list of Image objects
+	Images = []
+
+	# iterate through all the files in the directory
+	for name in os.listdir(path):
+		# ignore hidden files and non-files
+		if name.startswith('.'):
+			continue
+		filePath = os.path.join(path, name)
+		if not os.path.isfile(filePath):
+			continue
+"""
