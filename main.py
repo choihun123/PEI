@@ -11,18 +11,19 @@ import image
 
 if __name__ == '__main__':
 	# path to image folder
-	path = "/Users/hunchoi/Code/PEI/tests/output.tif"
+	path = "/Users/hunchoi/Code/PEI/tests/scaled.tif"
 
 	# load a TIF file
 	tif = image.Image(path)
 	if tif.array is None:
 		sys.exit("Error: could not open raster")
-
+	print tif.array
 	# convert array into OpenCV style numpy array (Height,Width,Bands)
 	tif.array = image.convert2OpenCV(tif.array)
-	
+	#print tif.array
 	# create a smaller image pyramid
-	tif.array = image.pyramid(tif.array, 5)
+	tif.array = image.pyramid(tif.array, 4)
+	cv2.imshow("image", tif.array)
 	
 	# constants and variables used for calculations and plotting
 	height, width,_ = tif.array.shape
@@ -50,7 +51,7 @@ if __name__ == '__main__':
 
 	# perform kmeans clustering and plot
 	centroids, label = kmeans2(data, 2, minit='points')
-	#image.plot2DClusters(data, centroids, label)
-	image.plot3DClusters(data, centroids, label)
+	image.plot2DClusters(data, centroids, label)
+	#image.plot3DClusters(data, centroids, label)
 
 	

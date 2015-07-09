@@ -20,9 +20,6 @@ def convert2OpenCV(image):
 	""" Converts a GDAL-generated numpy array into a OpenCV-style numpy array"""
 	# rearrange the axes to fit OpenCV array format
 	convert = image.transpose(1,2,0)
-
-	# R and B are flipped. Flip to correct order BGRA
-	convert = cv2.cvtColor(convert, cv2.COLOR_RGBA2BGRA)
 	return convert
 
 def ignoreNoData(image, i, j):
@@ -51,8 +48,8 @@ def NDVI(image, i, j):
 def plot2DClusters(data, centroids, label):
 	""" Graphs 2 of 4 axes and shows the k-means clusters in a 2D space """
 	# plot the data points
-	plt.plot(data[label==0,0], data[label==0,1], 'ob', 
-			 data[label==1,0], data[label==1,1], 'or')
+	plt.plot(data[label==0,1], data[label==0,2], 'ob', 
+			 data[label==1,1], data[label==1,2], 'or')
 
 	# plot the centroids
 	plt.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
