@@ -1,3 +1,4 @@
+
 from __future__ import division
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 
@@ -29,10 +30,10 @@ def ignoreNoData(image, i, j):
 	should be affected by this threshold. 
 	"""
 	# check that the pixel has no or close to no data
-	if (image[i, j, 0] <= 10 and
-		image[i, j, 1] <= 10 and
-		image[i, j, 2] <= 10 and
-		image[i, j, 3] <= 10):
+	if (image[i, j, 0] <= 50 and
+		image[i, j, 1] <= 50 and
+		image[i, j, 2] <= 50 and
+		image[i, j, 3] <= 50):
 		return True
 	return False
 
@@ -49,7 +50,9 @@ def plot2DClusters(data, centroids, label):
 	""" Graphs 2 of 4 axes and shows the k-means clusters in a 2D space """
 	# plot the data points
 	plt.plot(data[label==0,1], data[label==0,2], 'ob', 
-			 data[label==1,1], data[label==1,2], 'or')
+			 data[label==1,1], data[label==1,2], 'or',
+			 data[label==2,1], data[label==2,2], 'om',
+			 data[label==3,1], data[label==3,2], 'oc')
 
 	# plot the centroids
 	plt.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
@@ -80,3 +83,34 @@ def pyramid(image, N):
 	for i in range(N):
 		image = cv2.pyrDown(image)
 	return image
+
+def showClusters(label, height, width):
+	""" Displays a visual representation of the clustering """
+	# the image to be displayed
+	image = np.zeros([height, width, 3], dtype=np.uint8)
+
+	# iterate through the label 
+	it = np.nditer(label, flags=['f_index'])
+	while not it.finished:
+		# reverse calculate the coordinates of the pixel in question
+		x = it.index % width
+		y = it.index / width
+
+		# fill the pixel with a color according to its label
+		if it[0] == 0:
+			image[y, x] = (255,0,0)
+		elif it[0] == 1:
+			image[y, x] = (0, 255, 0)
+		elif it[0] == 2:
+			image[y, x] = (0, 0, 255)
+		elif it[0] == 3:
+			image[y, x] = (0, 255, 255)
+
+		it.iternext()
+
+	# display the image
+	cv2.imshow("clusters", image)
+	cv2.waitKey(0)
+
+
+

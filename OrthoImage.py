@@ -16,7 +16,7 @@ def load(filename):
 
 	# create image array and read in each raster band
 	image = np.empty([dataset.RasterCount, dataset.RasterYSize, \
-                                         dataset.RasterXSize], np.uint8)
+                                         dataset.RasterXSize], np.uint16)
 	for i in range(dataset.RasterCount):
 		image[i] = dataset.GetRasterBand(i+1).ReadAsArray( \
                            0, 0, dataset.RasterXSize, dataset.RasterYSize)
