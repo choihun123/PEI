@@ -112,5 +112,6 @@ def showClusters(label, height, width):
 	cv2.imshow("clusters", image)
 	cv2.waitKey(0)
 
-
-
+def trimNodata(image):
+	""" Trim the nodata pixels from the image """
+	pass

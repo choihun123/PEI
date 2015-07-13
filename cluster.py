@@ -20,6 +20,9 @@ if tif.array is None:
 # convert array into OpenCV style numpy array (Height,Width,Bands)
 tif.array = image.convert2OpenCV(tif.array)
 
+# trim the nodata image
+tif.array = image.trimNodata(tif.array)
+
 # create a smaller image pyramid
 tif.array = image.pyramid(tif.array, 4)
 #cv2.imshow("image", tif.array)
