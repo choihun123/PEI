@@ -113,5 +113,26 @@ def showClusters(label, height, width):
 	cv2.waitKey(0)
 
 def trimNodata(image):
-	""" Trim the nodata pixels from the image """
-	pass
+	""" Returns an image with the nodata pixels trimmed """
+	# the dimensions of the image
+	height, width, bands = image.shape
+	newHeight, newWidth = 0, 0
+
+	# reverse iterate to find new boundaries
+	for i in xrange(height-1, 0, -1):
+		# assuming the nodata is always from the far edge, find the index where
+		# image is no longer nodata.
+		if (image[i, 0]!=np.array([0,0,0,0])).all():
+			newHeight = i + 1
+			break
+
+	for i in xrange(width-1, 0, -1):
+		# find index where image is no longer nodata
+		if (image[0, i]!=np.array([0,0,0,0])).all():
+			newWidth = i + 1
+			break
+
+	# return a new image with smaller dimensions with nodata trimmed
+	trimmed = np.asarray(image[:newHeight, :newWidth, :], dtype=np.uint16)
+	return trimmed
+ 	

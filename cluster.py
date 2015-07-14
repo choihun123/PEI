@@ -43,7 +43,7 @@ for i in range(height):
 
 
 # perform kmeans clustering and plot
-centroids, label = kmeans2(data, 4, minit='points')
+centroids, label = kmeans2(data, 3, minit='points')
 #image.plot2DClusters(data, centroids, label)
 #image.plot3DClusters(data, centroids, label)
 
