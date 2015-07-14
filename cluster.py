@@ -15,11 +15,11 @@ path = "/Users/hunchoi/Code/PEI/satellite/ntf/july13"
 # list of Image objects
 allImages = []
 
-# data array for clustering
+# data array for clustering. Initially maximal length
 length = len([name for name in os.listdir(path) if name.endswith(".tif")])
 data = np.zeros([length*9216*7168, 4])
 
-# used for indexing 
+# used for indexing
 count = 0
 
 # iterate through all the files in the directory
@@ -61,10 +61,15 @@ for name in os.listdir(path):
 # trim the rest of numpy that's not used
 data = data[:count, :]
 
-# perform kmeans clustering and plot
+# perform kmeans clustering
 centroids, label = kmeans2(data, 3, minit='points')
+
+# save the ratio of each type of cluster in each Image
+#image.ratio(allImages, label)
+
+# plot graphs of clustering
 #image.plot2DClusters(data, centroids, label)
 #image.plot3DClusters(data, centroids, label)
 
-# display the clustering on a new image
-image.showMultClusters(allImages, label)
+# display the clustering on new images
+#image.showMultClusters(allImages, label)
