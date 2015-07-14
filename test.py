@@ -10,21 +10,7 @@ import struct
 # Find path to the images 
 path = "/Users/hunchoi/Code/PEI/sample_images/2.png"
 
-
-
-
-
-"""
-Hold this Code
-	# list of Image objects
-	Images = []
-
-	# iterate through all the files in the directory
-	for name in os.listdir(path):
-		# ignore hidden files and non-files
-		if name.startswith('.'):
-			continue
-		filePath = os.path.join(path, name)
-		if not os.path.isfile(filePath):
-			continue
-"""
+totalData = np.zeros([1, 4])
+data = np.array([0, 1, 2, 3])
+np.append(totalData, data)
+print totalData

@@ -85,7 +85,7 @@ def pyramid(image, N):
 	return image
 
 def showClusters(label, height, width):
-	""" Displays a visual representation of the clustering """
+	""" Displays one visual representation of the clustering """
 	# the image to be displayed
 	image = np.zeros([height, width, 3], dtype=np.uint8)
 
@@ -111,6 +111,17 @@ def showClusters(label, height, width):
 	# display the image
 	cv2.imshow("clusters", image)
 	cv2.waitKey(0)
+
+def showMultClusters(images, label):
+	""" Displays all the clusterings """
+	# iterate through each image to display
+	count = 0
+	for image in images:
+		height, width,_ = image.array.shape
+
+		# portion the label array and show individual clustering
+		showClusters(label[count:(count + height*width)], height, width)
+		count += height * width
 
 def trimNodata(image):
 	""" Returns an image with the nodata pixels trimmed """
