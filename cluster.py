@@ -8,71 +8,84 @@ import image
 # to show the whole numpy array, decomment
 #np.set_printoptions(threshold='nan')
 
-# path to image folder
-path = "/Users/hunchoi/Code/PEI/satellite/ntf/demoset"
-#path = "/Users/hunchoi/Code/PEI/satellite/ntf/test"
+def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
+			plot3D=False, show=True):
+	""" Perform a kmeans clustering on the TIF files in folder """
 
-# list of Image objects
-allImages = []
+	# validate input
+	if not os.path.isdir(folder):
+		sys.exit("Error: given path is not a directory")
+	if not 1 <= k <= 6:
+		sys.exit("Error: k must be between 1 and 6 (inclusive)")
 
-# data array for clustering. Initially maximal length
-length = len([name for name in os.listdir(path) if name.endswith(".tif")])
-data = np.zeros([length*9216*8192, 4])  #TODO figure out max size image dynamically
+	# path to image folder
+	path = folder
 
-# used for indexing
-count = 0
+	# list of Image objects
+	allImages = []
 
-# iterate through all the files in the directory
-for name in os.listdir(path):
-	# ignore hidden files and non-TIF files
-	if name.startswith('.') or not name.endswith(".tif"):
-		continue
-	filePath = os.path.join(path, name)
-	
-	# load a TIF file
-	tif = image.Image(name, filePath)
-	if tif.array is None:
-		sys.exit("Error: could not open raster")
+	# data array for clustering. Initially maximal length
+	length = len([name for name in os.listdir(path) if name.endswith(".tif")])
+	data = np.zeros([length*high, 4])
 
-	# convert array into OpenCV style numpy array (Height,Width,Bands)
-	tif.array = image.convert2OpenCV(tif.array)
+	# used for indexing
+	count = 0
 
-	# trim the nodata image
-	tif.array = image.trimNodata(tif.array)
+	# iterate through all the files in the directory
+	for name in os.listdir(path):
+		# ignore hidden files and non-TIF files
+		if name.startswith('.') or not name.endswith(".tif"):
+			continue
+		filePath = os.path.join(path, name)
+		
+		# load a TIF file
+		tif = image.Image(name, filePath)
+		if tif.array is None:
+			sys.exit("Error: could not open raster")
 
-	# create a smaller image pyramid and save tif in image list
-	tif.array = image.pyramid(tif.array, 4)
-	allImages.append(tif)
+		# convert array into OpenCV style numpy array (Height,Width,Bands)
+		tif.array = image.convert2OpenCV(tif.array)
 
-	# constants and variables used for calculations and plotting
-	height, width,_ = tif.array.shape
-	B, G, R, N = 0, 1, 2, 3
+		# trim the nodata image
+		tif.array = image.trimNodata(tif.array)
 
-	# iterate through every pixel
-	for i in range(height):
-		for j in range(width):
-			# put into data the values to be clustered			
-			data[count, 0] = tif.array[i, j, B] 
-			data[count, 1] = tif.array[i, j, G]  
-			data[count, 2] = tif.array[i, j, R]  
-			data[count, 3] = tif.array[i, j, N]  
-			count += 1
+		# create a smaller image pyramid and save tif in image list
+		tif.array = image.pyramid(tif.array, down)
+		allImages.append(tif)
 
-# trim the rest of numpy that's not used
-data = data[:count, :]
+		# constants and variables used for calculations and plotting
+		height, width,_ = tif.array.shape
+		B, G, R, N = 0, 1, 2, 3
 
-# perform kmeans clustering
-centroids, label = kmeans2(data, 4, minit='points')
+		# iterate through every pixel
+		for i in range(height):
+			for j in range(width):
+				# put into data the values to be clustered			
+				data[count, 0] = tif.array[i, j, B] 
+				data[count, 1] = tif.array[i, j, G]  
+				data[count, 2] = tif.array[i, j, R]  
+				data[count, 3] = tif.array[i, j, N]  
+				count += 1
 
-# for cluster consistency between runs
-order = image.sortClusters(centroids)
+	# trim the rest of numpy that's not used
+	data = data[:count, :]
 
-# save the ratio of each type of cluster in each Image
-image.ratio(allImages, label, order)
+	# perform kmeans clustering
+	centroids, label = kmeans2(data, k, minit='points')
 
-# plot graphs of clustering
-#image.plot2DClusters(data, centroids, label, order)
-#image.plot3DClusters(data, centroids, label, order)
+	# for cluster consistency between runs
+	order = image.sortClusters(centroids)
 
-# display the clustering on new images
-image.showMultClusters(allImages, label, order)
+	# save the ratio of each type of cluster in each Image
+	if ratio:
+		image.ratio(allImages, label, order)
+
+	# plot graphs of clustering
+	if plot2D:
+		image.plot2DClusters(data, centroids, label, order)
+	if plot3D:
+		image.plot3DClusters(data, centroids, label, order)
+
+	# display the clustering on new images
+	if show:
+		image.showMultClusters(allImages, label, order)
