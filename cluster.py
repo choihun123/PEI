@@ -17,7 +17,7 @@ allImages = []
 
 # data array for clustering. Initially maximal length
 length = len([name for name in os.listdir(path) if name.endswith(".tif")])
-data = np.zeros([length*9216*7168, 4])
+data = np.zeros([length*9216*8192, 4])  #TODO figure out max size image dynamically
 
 # used for indexing
 count = 0

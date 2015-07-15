@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import cv2
 import OrthoImage
-
+#TODO make the number of clusters dynamic
 # An image object that will hold several properties of each image
 class Image:
 	def __init__(self, name, path):
