@@ -2,7 +2,6 @@ import sys
 import os
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
 from scipy.cluster.vq import kmeans2
 import image
 
@@ -10,7 +9,8 @@ import image
 #np.set_printoptions(threshold='nan')
 
 # path to image folder
-path = "/Users/hunchoi/Code/PEI/satellite/ntf/july13"
+path = "/Users/hunchoi/Code/PEI/satellite/ntf/demoset"
+#path = "/Users/hunchoi/Code/PEI/satellite/ntf/test"
 
 # list of Image objects
 allImages = []
@@ -30,7 +30,7 @@ for name in os.listdir(path):
 	filePath = os.path.join(path, name)
 	
 	# load a TIF file
-	tif = image.Image(filePath)
+	tif = image.Image(name, filePath)
 	if tif.array is None:
 		sys.exit("Error: could not open raster")
 
@@ -62,14 +62,17 @@ for name in os.listdir(path):
 data = data[:count, :]
 
 # perform kmeans clustering
-centroids, label = kmeans2(data, 3, minit='points')
+centroids, label = kmeans2(data, 4, minit='points')
+
+# for cluster consistency between runs
+order = image.sortClusters(centroids)
 
 # save the ratio of each type of cluster in each Image
-#image.ratio(allImages, label)
+image.ratio(allImages, label, order)
 
 # plot graphs of clustering
-#image.plot2DClusters(data, centroids, label)
-#image.plot3DClusters(data, centroids, label)
+#image.plot2DClusters(data, centroids, label, order)
+#image.plot3DClusters(data, centroids, label, order)
 
 # display the clustering on new images
-#image.showMultClusters(allImages, label)
+image.showMultClusters(allImages, label, order)
