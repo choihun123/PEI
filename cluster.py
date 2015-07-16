@@ -1,17 +1,30 @@
 import sys
 import os
 import numpy as np
-import cv2
 from scipy.cluster.vq import kmeans2
 import image
 
-# to show the whole numpy array, decomment
-#np.set_printoptions(threshold='nan')
+"""
+This method will use scipy's kmeans2() to perform a clustering on all TIF files 
+in the specified folder. The options that are supplied perform the following:
 
+folder - path to the folder that has the TIF files
+high   - number of pixels in the largest image. Default resolution is 9216x8192
+k      - number of clusters to form. Default is 4 clusters.
+down   - number of times to downsample the image. Default is 4 times.
+ratio  - calculate ratios of clusters for each image and print. Default is True.
+plot2D - plot 2 axes of clusters. Default is False. Adjust Line 98 to 
+		 change axes.
+plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to 
+		 change axes.
+show   - show the clustering of each image. Default is True.
+
+The method returns the list of image objects so that the error-weighted 
+classifier can use the ratios. 
+"""
 def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 			plot3D=False, show=True):
 	""" Perform a kmeans clustering on the TIF files in folder """
-
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")
@@ -67,6 +80,10 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 				data[count, 3] = tif.array[i, j, N]  
 				count += 1
 
+				# check that data is big enough
+				if count > high:
+					sys.exit("Error: the highest resolution is too small")
+
 	# trim the rest of numpy that's not used
 	data = data[:count, :]
 
@@ -76,16 +93,19 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 	# for cluster consistency between runs
 	order = image.sortClusters(centroids)
 
-	# save the ratio of each type of cluster in each Image
+	# save and print the ratio of each type of cluster in each Image
 	if ratio:
 		image.ratio(allImages, label, order)
 
 	# plot graphs of clustering
 	if plot2D:
-		image.plot2DClusters(data, centroids, label, order)
+		image.plot2DClusters(data, centroids, label, order, B, G)
 	if plot3D:
-		image.plot3DClusters(data, centroids, label, order)
+		image.plot3DClusters(data, centroids, label, order, B, G, R)
 
-	# display the clustering on new images
+	# display the clustering
 	if show:
 		image.showMultClusters(allImages, label, order)
+
+	# return all the images to feed into the error-weighted classifier
+	return allImages

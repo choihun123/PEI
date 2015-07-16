@@ -1,13 +1,15 @@
-
 from __future__ import division
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 
 import matplotlib.pyplot as plt
-from matplotlib import cm
 import cv2
 import OrthoImage
-#TODO make the number of clusters dynamic
-# An image object that will hold several properties of each image
+
+"""
+An image object and several methods to manipulate the TIF file. The image 
+object holds the name, file path, raster as a numpy array in OpenCV 
+format (Heigt,Width,Bands), and up to 6 cluster ratios.
+"""
 class Image:
 	def __init__(self, name, path):
 		self.name = name								# name of image
@@ -17,14 +19,13 @@ class Image:
 		self.cluster2 = 0.0  							# cluster2 ratio
 		self.cluster3 = 0.0  							# cluster3 ratio
 		self.cluster4 = 0.0  							# cluster4 ratio
-		#self.cluster5 = 0.0  							# cluster5 ratio
-		#self.cluster6 = 0.0  							# cluster6 ratio
+		self.cluster5 = 0.0  							# cluster5 ratio
+		self.cluster6 = 0.0  							# cluster6 ratio
 
 def convert2OpenCV(image):
-	""" Converts a GDAL-generated numpy array into a OpenCV-style numpy array"""
+	""" Converts a GDAL-generated numpy array into a OpenCV numpy array"""
 	# rearrange the axes to fit OpenCV array format
-	convert = image.transpose(1,2,0)
-	return convert
+	return image.transpose(1,2,0)
 
 def NDVI(image, i, j):
 	""" Returns NDVI. Returns 0 if NIR+R is 0 """
@@ -35,39 +36,45 @@ def NDVI(image, i, j):
 		return (NIR-R)/(NIR+R)
 	return 0
 
-def plot2DClusters(data, centroids, label, order):
+def plot2DClusters(data, centroids, label, order, X, Y):
 	""" Graphs 2 of 4 axes and shows the k-means clusters in a 2D space """
 	o = order
 
 	# plot the data points
-	plt.plot(data[label==o[0],1], data[label==o[0],2], 'ob', 
-			 data[label==o[1],1], data[label==o[1],2], 'or',
-			 data[label==o[2],1], data[label==o[2],2], 'om',
-			 data[label==o[3],1], data[label==o[3],2], 'oc')
-			 #data[label==o[4],1], data[label==o[4],2], 'oy',
-			 #data[label==o[5],1], data[label==o[5],2], 'ow'
+	try:
+		plt.plot(data[label==o[0],X], data[label==o[0],Y], 'ob') 
+		plt.plot(data[label==o[1],X], data[label==o[1],Y], 'og')
+		plt.plot(data[label==o[2],X], data[label==o[2],Y], 'or')
+		plt.plot(data[label==o[3],X], data[label==o[3],Y], 'oy')
+		plt.plot(data[label==o[4],X], data[label==o[4],Y], 'oc')
+		plt.plot(data[label==o[5],X], data[label==o[5],Y], 'om')
+	except IndexError:
+		pass 
 
 	# plot the centroids
 	plt.plot(centroids[:,0],centroids[:,1],'sg',markersize=8)
 	plt.show()
 	plt.close()
 
-def plot3DClusters(data, centroids, label, order):
+def plot3DClusters(data, centroids, label, order, X, Y, Z):
 	""" Graphs 3 of 4 axes and shows the k-means clusters in 3D space """
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
 	o, l = order, label
 
 	# plot the data points
-	ax.scatter(data[l==o[0],0], data[l==o[0],1], data[l==o[0],2], c='b')
-	ax.scatter(data[l==o[1],0], data[l==o[1],1], data[l==o[1],2], c='g')
-	ax.scatter(data[l==o[2],0], data[l==o[2],1], data[l==o[2],2], c='r')
-	ax.scatter(data[l==o[3],0], data[l==o[3],1], data[l==o[3],2], c='m')
-	#ax.scatter(data[l==o[4],0], data[l==o[4],1], data[l==o[4],2], c='m')
-	#ax.scatter(data[l==o[5],0], data[l==o[5],1], data[l==o[5],2], c='m')
+	try:
+		ax.scatter(data[l==o[0],X], data[l==o[0],Y], data[l==o[0],Z], c='b')
+		ax.scatter(data[l==o[1],X], data[l==o[1],Y], data[l==o[1],Z], c='g')
+		ax.scatter(data[l==o[2],X], data[l==o[2],Y], data[l==o[2],Z], c='r')
+		ax.scatter(data[l==o[3],X], data[l==o[3],Y], data[l==o[3],Z], c='y')
+		ax.scatter(data[l==o[4],X], data[l==o[4],Y], data[l==o[4],Z], c='c')
+		ax.scatter(data[l==o[5],X], data[l==o[5],Y], data[l==o[5],Z], c='m')
+	except IndexError:
+		pass
 
 	# plot the centroids
-	ax.scatter(centroids[:,0], centroids[:,1], centroids[:,2], c='c')
+	ax.scatter(centroids[:,0], centroids[:,1], centroids[:,2], c='w', s=30)
 	plt.show()
 	plt.close()
 
@@ -79,6 +86,8 @@ def pyramid(image, N):
 
 def ratio(images, label, order):
 	""" Saves the ratio of each type of cluster into each Image object """
+	o = order
+
 	# iterate through each image
 	count = 0
 	for image in images:
@@ -86,19 +95,26 @@ def ratio(images, label, order):
 		h, w,_ = image.array.shape
 		total = h * w
 
-		# find the ratios of each cluster. Up to 6.
-		image.cluster1 = (np.sum(label[count:(count + h*w)]==order[0]))/total
-		image.cluster2 = (np.sum(label[count:(count + h*w)]==order[1]))/total
-		image.cluster3 = (np.sum(label[count:(count + h*w)]==order[2]))/total
-		image.cluster4 = (np.sum(label[count:(count + h*w)]==order[3]))/total
-		#image.cluster5 = (np.sum(label[count:(count + h*w)]==order[4]))/total
-		#image.cluster6 = (np.sum(label[count:(count + h*w)]==order[5]))/total
+		# find the ratios of each cluster
+		try:
+			image.cluster1 = (np.sum(label[count:(count + h*w)]==o[0]))/total
+			image.cluster2 = (np.sum(label[count:(count + h*w)]==o[1]))/total
+			image.cluster3 = (np.sum(label[count:(count + h*w)]==o[2]))/total
+			image.cluster4 = (np.sum(label[count:(count + h*w)]==o[3]))/total
+			image.cluster5 = (np.sum(label[count:(count + h*w)]==o[4]))/total
+			image.cluster6 = (np.sum(label[count:(count + h*w)]==o[5]))/total
+		except IndexError:
+			pass
 
-		print "Ratios of {0}: {1}, {2}, {3}, {4}".format(image.name,
-														 image.cluster1,
-														 image.cluster2,
-														 image.cluster3,
-														 image.cluster4)
+		# print the cluster ratios, excluding empty ones
+		print "Ratios of "+image.name+": ",
+		for v in sorted(vars(image)):
+			if "cluster" in v:
+				value = getattr(image, v)
+				if value != 0.0:
+					print str(value)+", ",
+		print '\n'
+
 		count += h*w
 
 def showClusters(label, height, width, name, order):
@@ -106,14 +122,14 @@ def showClusters(label, height, width, name, order):
 	# the image to be displayed
 	image = np.zeros([height, width, 3], dtype=np.uint8)
 
-	# iterate through the label 
+	# iterate through label 
 	it = np.nditer(label, flags=['f_index'])
 	while not it.finished:
-		# reverse calculate the coordinates of the pixel in question
+		# calculate the coordinates of the pixel in question
 		x = it.index % width
 		y = it.index / width
 
-		# fill the pixel with a color according to its label. Up to 6 labels.
+		# fill the pixel with a color according to its label
 		if it[0] == order[0]:
 			image[y, x] = (255,0,0)       # Blue
 		elif it[0] == order[1]:
@@ -122,10 +138,10 @@ def showClusters(label, height, width, name, order):
 			image[y, x] = (0, 0, 255)     # Red
 		elif it[0] == order[3]:
 			image[y, x] = (0, 255, 255)   # Yellow
-		#elif it[0] == order[4]:
-			#image[y, x] = (255, 255, 0)   # Cyan
-		#elif it[0] == order[5]:
-			#image[y, x] = (255, 0, 255)   # Magenta
+		elif it[0] == order[4]:
+			image[y, x] = (255, 255, 0)   # Cyan
+		elif it[0] == order[5]:
+			image[y, x] = (255, 0, 255)   # Magenta
 
 		it.iternext()
 
@@ -154,9 +170,8 @@ def sortClusters(centroids):
 	for i in xrange(k):
 		sums[i] = np.sum(centroids[i])
 
-	# find and save indexes that would sort the sums 
-	order = np.argsort(sums)
-	return order
+	# return array of indexes that would sort the sums 
+	return np.argsort(sums)
 
 def trimNodata(image):
 	""" Returns an image with the nodata pixels trimmed """
@@ -179,6 +194,4 @@ def trimNodata(image):
 			break
 
 	# return a new image with smaller dimensions with nodata trimmed
-	trimmed = np.asarray(image[:newHeight, :newWidth, :], dtype=np.uint16)
-	return trimmed
- 	
+	return np.asarray(image[:newHeight, :newWidth, :], dtype=np.uint16)
