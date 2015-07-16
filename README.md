@@ -1,6 +1,6 @@
 <b>Usage of TOY</b> 
 
-python main.py \<file path>
+python main.py -various options \<file path> \<k clusters>
 
 <b> What happens under the hood </b>
 
