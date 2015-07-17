@@ -1,11 +1,7 @@
 <b>Dependencies</b>
 
 To be able to run this TOY program, you must have the following dependencies installed on your system:
-Python
-numpy
-scipy
-GDAL
-
+Python, numpy, scipy, matplotlib, GDAL, OpenCV. Ideally these are all installed with Homebrew.
 
 <b>Usage of TOY</b> 
 
