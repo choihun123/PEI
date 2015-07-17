@@ -1,3 +1,12 @@
+<b>Dependencies</b>
+
+To be able to run this TOY program, you must have the following dependencies installed on your system:
+Python
+numpy
+scipy
+GDAL
+
+
 <b>Usage of TOY</b> 
 
 python main.py -various options \<file path> \<k clusters>
