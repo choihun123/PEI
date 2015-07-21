@@ -1,4 +1,5 @@
 from subprocess import check_output
+import subprocess
 import os
 import sys
 
@@ -26,7 +27,8 @@ def translate(folder):
 		
 		# convert all NITFs in folder to TIFs in same folder
 		output = check_output(["gdal_translate", "--config", "GDAL_CACHEMAX", 
-							   "512", filePath, folder+"/"+ str(count)+".tif"])
+							   "512", filePath, folder+"/"+ str(count)+".tif"],
+							   stderr=subprocess.STDOUT)
 
 		# extract numbers from stdout
 		output = output.replace(',',' ')
@@ -60,6 +62,7 @@ if __name__ == "__main__":
 		
 		# call gdal_translate on a whole folder of NITF files. Save in input folder
 		check_output(["gdal_translate", "--config", "GDAL_CACHEMAX", "512", 
-					  filePath, sys.argv[1]+"/"+ str(count)+".tif"])
+					  filePath, sys.argv[1]+"/"+ str(count)+".tif"],
+					  stderr=subprocess.STDOUT)
 
 		count += 1

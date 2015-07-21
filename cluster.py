@@ -109,3 +109,7 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 
 	# return all the images to feed into the error-weighted classifier
 	return allImages
+
+# if called as a script, run it on the path given
+if __name__ == '__main__':
+	cluster(sys.argv[1])

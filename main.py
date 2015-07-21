@@ -2,7 +2,7 @@ import os, sys
 from translate import translate
 from cluster import cluster
 
-if __name__ = '__main__':
+if __name__ == '__main__':
 	# verify folder path
 	if not os.path.isdir(sys.argv[1]):
 		sys.exit("Error: given path is not a directory")
@@ -10,7 +10,7 @@ if __name__ = '__main__':
 
 	# translate the NITFs to TIFs if needed
 	high = translate(path)
-
+	
 	# cluster the TIFs
 	allImages = cluster(path, high)
 
