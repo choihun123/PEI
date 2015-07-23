@@ -15,6 +15,7 @@ class Image:
 		self.name = name								# name of image
 		self.path = path								# path of image
 		self.array,_ = OrthoImage.load(path)            # numpy array of raster
+		self.label = None								# clusters of image
 		self.cluster1 = 0.0 						    # cluster1 ratio
 		self.cluster2 = 0.0  							# cluster2 ratio
 		self.cluster3 = 0.0  							# cluster3 ratio
@@ -84,25 +85,23 @@ def pyramid(image, N):
 		image = cv2.pyrDown(image)
 	return image
 
-def ratio(images, label, order):
+def ratio(images, order):
 	""" Saves the ratio of each type of cluster into each Image object """
 	o = order
 
 	# iterate through each image
-	count = 0
 	for image in images:
-		# total pixels in ths image
 		h, w,_ = image.array.shape
-		total = h * w
+		total = h*w
 
 		# find the ratios of each cluster
 		try:
-			image.cluster1 = (np.sum(label[count:(count + h*w)]==o[0]))/total
-			image.cluster2 = (np.sum(label[count:(count + h*w)]==o[1]))/total
-			image.cluster3 = (np.sum(label[count:(count + h*w)]==o[2]))/total
-			image.cluster4 = (np.sum(label[count:(count + h*w)]==o[3]))/total
-			image.cluster5 = (np.sum(label[count:(count + h*w)]==o[4]))/total
-			image.cluster6 = (np.sum(label[count:(count + h*w)]==o[5]))/total
+			image.cluster1 = (np.sum(image.label==o[0]))/total
+			image.cluster2 = (np.sum(image.label==o[1]))/total
+			image.cluster3 = (np.sum(image.label==o[2]))/total
+			image.cluster4 = (np.sum(image.label==o[3]))/total
+			image.cluster5 = (np.sum(image.label==o[4]))/total
+			image.cluster6 = (np.sum(image.label==o[5]))/total
 		except IndexError:
 			pass
 
@@ -115,49 +114,44 @@ def ratio(images, label, order):
 					print str(value)+", ",
 		print '\n'
 
-		count += h*w
-
-def showClusters(label, height, width, name, order):
+def showClusters(image, order):
 	""" Displays one visual representation of the clustering """
-	# the image to be displayed
-	image = np.zeros([height, width, 3], dtype=np.uint8)
+	# the clustered image to be displayed
+	h, w,_ = image.array.shape
+	cluster = np.zeros([h, w, 3], dtype=np.uint8)
 
-	# iterate through label 
-	it = np.nditer(label, flags=['f_index'])
+	# iterate through image's label 
+	it = np.nditer(image.label, flags=['f_index'])
 	while not it.finished:
 		# calculate the coordinates of the pixel in question
-		x = it.index % width
-		y = it.index / width
+		x = it.index % w
+		y = it.index / w
 
 		# fill the pixel with a color according to its label
 		if it[0] == order[0]:
-			image[y, x] = (255,0,0)       # Blue
+			cluster[y, x] = (255,0,0)       # Blue
 		elif it[0] == order[1]:
-			image[y, x] = (0, 255, 0)     # Green
+			cluster[y, x] = (0, 255, 0)     # Green
 		elif it[0] == order[2]:
-			image[y, x] = (0, 0, 255)     # Red
+			cluster[y, x] = (0, 0, 255)     # Red
 		elif it[0] == order[3]:
-			image[y, x] = (0, 255, 255)   # Yellow
+			cluster[y, x] = (0, 255, 255)   # Yellow
 		elif it[0] == order[4]:
-			image[y, x] = (255, 255, 0)   # Cyan
+			cluster[y, x] = (255, 255, 0)   # Cyan
 		elif it[0] == order[5]:
-			image[y, x] = (255, 0, 255)   # Magenta
+			cluster[y, x] = (255, 0, 255)   # Magenta
 
 		it.iternext()
 
 	# display the image
-	cv2.imshow(name, image)
+	cv2.imshow(image.name, cluster)
 
-def showMultClusters(images, label, order):
+def showMultClusters(images, order):
 	""" Displays all the clusterings """
 	# iterate through each image to display
-	count = 0
 	for image in images:
-		h, w,_ = image.array.shape
-
-		# portion the label array and show individual clustering
-		showClusters(label[count:(count + h*w)], h, w, image.name, order)
-		count += h * w
+		# show individual clustering
+		showClusters(image, order)
 
 	cv2.waitKey(0)
 
@@ -172,6 +166,20 @@ def sortClusters(centroids):
 
 	# return array of indexes that would sort the sums 
 	return np.argsort(sums)
+
+def splitLabel(images, label):
+	""" Splits the label array so each image has its own label array """
+	# iterate through each image
+	count = 0
+	for image in images:
+		# properties of this image
+		h, w,_ = image.array.shape
+
+		# find the label array for this image
+		image.label = label[count:(count + h*w)]
+
+		# increment by the number of pixels
+		count += h*w
 
 def trimNodata(image):
 	""" Returns an image with the nodata pixels trimmed """

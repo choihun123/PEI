@@ -3,7 +3,7 @@ import numpy as np
 from pyspatialite import dbapi2 as db
 import image
 
-def classify(path, images):
+def classify(path, images, down=4):
 	""" Runs MLPY's Maximum Likelihood Classification algorithm on the images"""
 	pass
 
@@ -54,5 +54,6 @@ if __name__ == '__main__':
 
 	# classify other points randomly chosen from the image
 	results = ml.pred(train)
-	print results
+	print results[:30]
+	print results[30:]
 	

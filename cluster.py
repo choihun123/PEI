@@ -90,12 +90,15 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 	# perform kmeans clustering
 	centroids, label = kmeans2(data, k, minit='points')
 
+	# split the label array into a specific one for each image
+	image.splitLabel(allImages, label)
+
 	# for cluster consistency between runs
 	order = image.sortClusters(centroids)
 
 	# save and print the ratio of each type of cluster in each Image
 	if ratio:
-		image.ratio(allImages, label, order)
+		image.ratio(allImages, order)
 
 	# plot graphs of clustering
 	if plot2D:
@@ -105,7 +108,7 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 
 	# display the clustering
 	if show:
-		image.showMultClusters(allImages, label, order)
+		image.showMultClusters(allImages, order)
 
 	# return all the images to feed into the error-weighted classifier
 	return allImages
