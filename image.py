@@ -8,7 +8,7 @@ import OrthoImage
 """
 An image object and several methods to manipulate the TIF file. The image 
 object holds the name, file path, raster as a numpy array in OpenCV 
-format (Heigt,Width,Bands), and up to 6 cluster ratios.
+format (Height,Width,Bands), and up to 6 cluster ratios.
 """
 class Image:
 	def __init__(self, name, path):
@@ -23,7 +23,7 @@ class Image:
 		self.cluster5 = 0.0  							# cluster5 ratio
 		self.cluster6 = 0.0  							# cluster6 ratio
 
-def convert2OpenCV(image):
+def GDAL2OpenCV(image):
 	""" Converts a GDAL-generated numpy array into a OpenCV numpy array"""
 	# rearrange the axes to fit OpenCV array format
 	return image.transpose(1,2,0)
@@ -113,6 +113,29 @@ def ratio(images, order):
 				if value != 0.0:
 					print str(value)+", ",
 		print '\n'
+
+def showClassification(results, height, width):
+	""" Displays the classification results """
+	# image of classification to be displayed
+	classify = np.zeros([height, width, 3], dtype=np.uint8)
+
+	# iterate through the classification results
+	it = np.nditer(results, flags=['f_index'])
+	while not it.finished:
+		# calculate the coordinates of the pixel in question
+		x = it.index % width
+		y = it.index / width
+
+		# if crop field pixel, display as red. Else display as green
+		if it[0] == 1:
+			classify[y, x] = (0, 0, 255)
+		else:
+			classify[y, x] = (0, 255, 0)
+
+		it.iternext()
+
+	cv2.imshow("Classification", classify)
+	cv2.waitKey(0)
 
 def showClusters(image, order):
 	""" Displays one visual representation of the clustering """

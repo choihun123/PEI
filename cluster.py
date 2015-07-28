@@ -57,7 +57,7 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 			sys.exit("Error: could not open raster")
 
 		# convert array into OpenCV style numpy array (Height,Width,Bands)
-		tif.array = image.convert2OpenCV(tif.array)
+		tif.array = image.GDAL2OpenCV(tif.array)
 
 		# trim the nodata image
 		tif.array = image.trimNodata(tif.array)
@@ -71,13 +71,13 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 		B, G, R, N = 0, 1, 2, 3
 
 		# iterate through every pixel
-		for i in range(height):
-			for j in range(width):
+		for i in xrange(height):
+			for j in xrange(width):
 				# put into data the values to be clustered			
-				data[count, 0] = tif.array[i, j, B] 
-				data[count, 1] = tif.array[i, j, G]  
-				data[count, 2] = tif.array[i, j, R]  
-				data[count, 3] = tif.array[i, j, N]  
+				data[count, 0] = tif.array[i, j, B]
+				data[count, 1] = tif.array[i, j, G]
+				data[count, 2] = tif.array[i, j, R]
+				data[count, 3] = tif.array[i, j, N]
 				count += 1
 
 				# check that data is big enough

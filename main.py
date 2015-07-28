@@ -1,6 +1,7 @@
 import os, sys
 from translate import translate
 from cluster import cluster
+from classify import classify
 
 if __name__ == '__main__':
 	# verify folder path
@@ -8,11 +9,14 @@ if __name__ == '__main__':
 		sys.exit("Error: given path is not a directory")
 	path = sys.argv[1]
 
+	#TODO add optional command line arguments for K and down and 
+	# flags for the other options in cluster.py
+
 	# translate the NITFs to TIFs if needed
-	high = translate(path)
+	#high = translate(path)
 	
 	# cluster the TIFs
-	allImages = cluster(path, high)
+	allImages = cluster(path, show=False)
 
 	# classify crop fields
 	allImages = classify(path, allImages)
