@@ -17,6 +17,7 @@ if __name__ == '__main__':
 	
 	# cluster the TIFs
 	allImages = cluster(path, show=False)
+	#allImages = cluster(path, high, show=False)
 
 	# classify crop fields
 	allImages = classify(path, allImages)
