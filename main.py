@@ -20,7 +20,9 @@ if __name__ == '__main__':
 	#allImages = cluster(path, high, show=False)
 
 	# classify crop fields
-	allImages = classify(path, allImages)
+	allImages = classify(path, allImages, show=False)
+
+	#allImages = classify(path, allImages, high)
 
 	# calculate error rates
 

@@ -6,7 +6,7 @@ import image
 
 """
 This method will use scipy's kmeans2() to perform a clustering on all TIF files 
-in the specified folder. The options that are supplied perform the following:
+in the specified folder. The parameters perform the following:
 
 folder - path to the folder that has the TIF files
 high   - number of pixels in the largest image. Default resolution is 9216x8192
@@ -20,7 +20,9 @@ plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to
 show   - show the clustering of each image. Default is True.
 
 The method returns the list of image objects so that the error-weighted 
-classifier can use the ratios. 
+classifier can use the ratios. This method currently clusters based on the
+four bands of the satellite images (BGRN). The clustering is saved in the .label
+data attribute of each image instance as a 1D array. 
 """
 def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 			plot3D=False, show=True):

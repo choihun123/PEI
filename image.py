@@ -3,14 +3,24 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 
 import matplotlib.pyplot as plt
 import cv2
+import shapefile
 import OrthoImage
 
 """
-An image object and several methods to manipulate the TIF file. The image 
+An image object and several methods required throughout the whole process of 
+clustering, classifying, and error-based training. The image 
 object holds the name, file path, raster as a numpy array in OpenCV 
 format (Height,Width,Bands), and up to 6 cluster ratios.
 """
 class Image:
+	# error rates for each cluster
+	error1 = 0.0
+	error2 = 0.0
+	error3 = 0.0
+	error4 = 0.0
+	error5 = 0.0
+	error6 = 0.0
+
 	def __init__(self, name, path):
 		self.name = name								# name of image
 		self.path = path								# path of image
@@ -114,9 +124,39 @@ def ratio(images, order):
 					print str(value)+", ",
 		print '\n'
 
-def showClassification(results, height, width):
+def readShapefile(shapes):
+	"""
+	Returns the x, y coordinates of the pixels, as well as the class labels
+	in arrays based off the shapefile 
+	"""
+	# lists to be used to find coordinates and type of the pixels
+	x = []
+	y = []
+	classes = np.zeros(0)
+
+	# open the shapefile and read in all the pixels of the polygons
+	sf = shapefile.Reader(shapes)
+	shapes = list(sf.iterShapes())
+	records = sf.records()
+	for i in xrange(len(shapes)):
+		for point in shapes[i].points:
+			x.append(point[0])
+			y.append(point[1]*-1)
+
+			# if the polygon is a crop field polygon, label it class 1
+			if records[i][0] == 'crops':
+				classes = np.append(classes, 1)
+
+			# else label it class 2
+			else:
+				classes = np.append(classes, 2)
+
+	return x, y, classes
+
+def showClassification(results, image):
 	""" Displays the classification results """
 	# image of classification to be displayed
+	height, width,_ = image.array.shape
 	classify = np.zeros([height, width, 3], dtype=np.uint8)
 
 	# iterate through the classification results
@@ -134,8 +174,7 @@ def showClassification(results, height, width):
 
 		it.iternext()
 
-	cv2.imshow("Classification", classify)
-	cv2.waitKey(0)
+	cv2.imshow("Classification of " + image.name, classify)
 
 def showClusters(image, order):
 	""" Displays one visual representation of the clustering """
@@ -169,6 +208,24 @@ def showClusters(image, order):
 	# display the image
 	cv2.imshow(image.name, cluster)
 
+def showMultClassification(results, images):
+	""" Displays all the classification results in images """
+	# count how much of the results array to feed
+	count = 0
+
+	# iterate through each image
+	for img in images:
+		# properties of this image
+		h, w,_ = img.array.shape
+
+		# show individual classification result
+		showClassification(results[count:(count+h*w)], img)
+
+		# increment by the number of pixels in the previous image
+		count += h*w
+
+	cv2.waitKey(0)
+
 def showMultClusters(images, order):
 	""" Displays all the clusterings """
 	# iterate through each image to display
@@ -201,7 +258,7 @@ def splitLabel(images, label):
 		# find the label array for this image
 		image.label = label[count:(count + h*w)]
 
-		# increment by the number of pixels
+		# increment by the number of pixels in the previous image
 		count += h*w
 
 def trimNodata(image):
