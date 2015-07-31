@@ -1,6 +1,5 @@
 import subprocess as sp
-import os
-import sys
+import sys, os
 
 def translate(folder):
 	""" 

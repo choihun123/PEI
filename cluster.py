@@ -1,12 +1,11 @@
-import sys
-import os
+import sys, os
 import numpy as np
-from scipy.cluster.vq import kmeans2
+from sklearn.cluster import KMeans
 import image
 
 """
-This method will use scipy's kmeans2() to perform a clustering on all TIF files 
-in the specified folder. The parameters perform the following:
+This method will use scikit-learn's KMeans() to perform a clustering on all 
+TIF files in the specified folder. The parameters perform the following:
 
 folder - path to the folder that has the TIF files
 high   - number of pixels in the largest image. Default resolution is 9216x8192
@@ -90,7 +89,10 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 	data = data[:count, :]
 
 	# perform kmeans clustering
-	centroids, label = kmeans2(data, k, minit='points')
+	clstr = KMeans(n_clusters=k, n_jobs=-1)
+	clstr.fit(data)
+	label = clstr.labels_
+	centroids = clstr.cluster_centers_
 
 	# split the label array into a specific one for each image
 	image.splitLabel(allImages, label)

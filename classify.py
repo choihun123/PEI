@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os
 import mlpy
 import numpy as np
 import image

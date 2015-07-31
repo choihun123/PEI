@@ -1,4 +1,4 @@
-import os, sys
+import sys, os
 from translate import translate
 from cluster import cluster
 from classify import classify
@@ -21,7 +21,6 @@ if __name__ == '__main__':
 
 	# classify crop fields
 	allImages = classify(path, allImages, show=False)
-
 	#allImages = classify(path, allImages, high)
 
 	# calculate error rates
