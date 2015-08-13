@@ -17,10 +17,10 @@ if __name__ == '__main__':
 	
 	# cluster the TIFs
 	allImages = cluster(path, show=False)
-	#allImages = cluster(path, high, show=False)
+	#allImages = cluster(path, high, show=True)
 
 	# classify crop fields
-	allImages = classify(path, allImages, show=False)
+	allImages = classify(path, allImages, show=True)
 	#allImages = classify(path, allImages, high)
 
 	# calculate error rates

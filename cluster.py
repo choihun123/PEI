@@ -31,6 +31,10 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 		sys.exit("Error: given path is not a directory")
 	if not 1 <= k <= 6:
 		sys.exit("Error: k must be between 1 and 6 (inclusive)")
+	if not down >= 0:
+		sys.exit("Error: downsampling rate cannot be negative")
+	if not high >= 0:
+		sys.exit("Error: high cannot be negative")
 
 	# path to image folder
 	path = folder
@@ -40,15 +44,16 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 
 	# data array for clustering. Initially maximal length
 	length = len([name for name in os.listdir(path) if name.endswith(".tif")])
-	data = np.zeros([length*high, 4])
+	data = np.zeros([high*length, 4])
 
 	# used for indexing
 	count = 0
 
 	# iterate through all the files in the directory
 	for name in os.listdir(path):
-		# ignore hidden files and non-TIF files
-		if name.startswith('.') or not name.endswith(".tif"):
+		# ignore hidden files and training/test TIF files and non-TIF files 
+		if name.startswith('.') or name.startswith("T") or name.startswith("Q")\
+			or not name.endswith(".tif"):
 			continue
 		filePath = os.path.join(path, name)
 		
@@ -74,16 +79,16 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 		# iterate through every pixel
 		for i in xrange(height):
 			for j in xrange(width):
-				# put into data the values to be clustered			
-				data[count, 0] = tif.array[i, j, B]
-				data[count, 1] = tif.array[i, j, G]
-				data[count, 2] = tif.array[i, j, R]
-				data[count, 3] = tif.array[i, j, N]
-				count += 1
+				try:
+					# put into data the values to be clustered			
+					data[count, 0] = tif.array[i, j, B]
+					data[count, 1] = tif.array[i, j, G]
+					data[count, 2] = tif.array[i, j, R]
+					data[count, 3] = tif.array[i, j, N]
+					count += 1
 
-				# check that data is big enough
-				if count > high:
-					sys.exit("Error: the highest resolution is too small")
+				except IndexError:
+					sys.exit("Error: high is too small")
 
 	# trim the rest of numpy that's not used
 	data = data[:count, :]

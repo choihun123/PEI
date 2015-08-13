@@ -3,7 +3,8 @@ import sys, os
 
 def translate(folder):
 	""" 
-	Uses GDAL_TRANSLATE to convert all the NITFs in folder into TIFs. 
+	Uses GDAL_TRANSLATE to convert all the NITFs in folder into TIFs. Uses
+	extra cache memory and baseline profile.
 	Returns the number of pixels of the largest iamge.
 	"""
 	# validate input
@@ -25,10 +26,15 @@ def translate(folder):
 		
 		# convert all NITFs in folder to TIFs in same folder
 		output = sp.check_output(["gdal_translate", "--config", "GDAL_CACHEMAX", 
-							   "512", filePath, folder+"/"+ str(count)+".tif"],
+							   "512", "-co", "PROFILE=BASELINE", filePath, 
+							   folder + "/"+ name[:7] + str(count)+".tif"],
 							   stderr=sp.STDOUT)
 
-		# extract numbers from stdout
+		# delete the RPB and XML file that contains the geographic data
+		os.remove(folder + "/"+ name[:7] + str(count) + ".RPB")
+		os.remove(folder + "/"+ name[:7] + str(count) + ".tif.aux.xml")
+
+		# extract image dimensions from stdout
 		output = output.replace(',',' ')
 		n = [int(s) for s in output.split() if s.isdigit()]
 
@@ -58,9 +64,14 @@ if __name__ == "__main__":
 			continue
 		filePath = os.path.join(sys.argv[1], name)
 		
-		# call gdal_translate on a whole folder of NITF files. Save in input folder
-		sp.check_output(["gdal_translate", "--config", "GDAL_CACHEMAX", "512", 
-					  filePath, sys.argv[1]+"/"+ str(count)+".tif"],
-					  stderr=sp.STDOUT)
+		# convert all NITFs in folder to TIFs in same folder
+		output = sp.check_output(["gdal_translate", "--config", "GDAL_CACHEMAX", 
+							   "512", "-co", "PROFILE=BASELINE", filePath, 
+							   sys.argv[1] + "/"+ name[:7] + str(count)+".tif"],
+							   stderr=sp.STDOUT)
+
+		# delete the RPB and XML file that contains the geographic data
+		os.remove(sys.argv[1] + "/"+ name[:7] + str(count) + ".RPB")
+		os.remove(sys.argv[1] + "/"+ name[:7] + str(count) + ".tif.aux.xml")
 
 		count += 1

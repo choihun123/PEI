@@ -124,31 +124,50 @@ def ratio(images, order):
 					print str(value)+", ",
 		print '\n'
 
-def readShapefile(shapes):
+def readPolygonTIF(polygonTIF, shpfile, down):
 	"""
-	Returns the x, y coordinates of the pixels, as well as the class labels
-	in arrays based off the shapefile 
+	Returns the x, y coordinates of the pixels in lists as well as the class 
+	labels in a numpy array based off the polygonTIF. polygonTIF will be 
+	effectively downsampled in this function, and thus so are x, y, and class.
 	"""
-	# lists to be used to find coordinates and type of the pixels
+	sample = 2**down
+
+	# lists/array to be used to find coordinates and type of the pixels
 	x = []
 	y = []
 	classes = np.zeros(0)
 
-	# open the shapefile and read in all the pixels of the polygons
-	sf = shapefile.Reader(shapes)
-	shapes = list(sf.iterShapes())
-	records = sf.records()
-	for i in xrange(len(shapes)):
-		for point in shapes[i].points:
-			x.append(point[0])
-			y.append(point[1]*-1)
+	# read in the polygonImage
+	polyImage,_ = OrthoImage.load(polygonTIF)
+	polyImage = GDAL2OpenCV(polyImage)
 
-			# if the polygon is a crop field polygon, label it class 1
-			if records[i][0] == 'crops':
+	# downsample the polTIF
+	polyImage = pyramid(polyImage, down)
+
+	# dimensions of TIF image
+	h, w = polyImage.shape
+
+	# downsampled dimensions of the bounding box of the polygons
+	sf = shapefile.Reader(shpfile)
+	lx,_ ,_ , uy = sf.bbox
+	lx = lx/sample
+	uy = uy/sample*-1
+
+	# iterate through the entire polyImage
+	for i in xrange(h):
+		for j in xrange(w):
+			# if the value of the pixel is 255(crop) then add to the lists/array
+			# as a crop pixel
+			if polyImage[i, j] >= 255/sample:
+				x.append(j + lx)
+				y.append(i + uy)
 				classes = np.append(classes, 1)
 
-			# else label it class 2
-			else:
+			# else if the value of the pixel is 1 (noncrop) then add to lists
+			# as a noncrop pixel
+			elif polyImage[i, j] == 1:
+				x.append(j + lx)
+				y.append(i + uy)
 				classes = np.append(classes, 2)
 
 	return x, y, classes
@@ -225,6 +244,7 @@ def showMultClassification(results, images):
 		count += h*w
 
 	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 def showMultClusters(images, order):
 	""" Displays all the clusterings """
@@ -234,6 +254,34 @@ def showMultClusters(images, order):
 		showClusters(image, order)
 
 	cv2.waitKey(0)
+	cv2.destroyAllWindows()
+
+def showPolygons(image, x, y, classes):
+	""" Shows the shapefile and colors crops as red and noncrops as green """
+	# properties of this image
+	h, w,_ = image.array.shape
+
+	# create a new image to display the shapefile
+	shapes = np.zeros([h, w, 3], dtype=np.uint8)
+
+	# iterate through image's label 
+	it = np.nditer(classes, flags=['f_index'])
+	while not it.finished:
+		# calculate the coordinates of the pixel in question
+		px = x[it.index]
+		py = y[it.index]
+		
+		# Draw crop field pixels as red and anything else as green
+		if it[0] == 1:
+			shapes[py, px] = (0, 0, 255)
+		elif it[0] == 2:
+			shapes[py, px] = (0, 255, 0)
+
+		it.iternext()
+
+	cv2.imshow("Shapefile of " + image.name, shapes)
+	cv2.waitKey(0)
+	cv2.destroyAllWindows()
 
 def sortClusters(centroids):
 	""" Sorts the clusters in order from highest to lowest """
@@ -262,7 +310,11 @@ def splitLabel(images, label):
 		count += h*w
 
 def trimNodata(image):
-	""" Returns an image with the nodata pixels trimmed """
+	"""
+	Returns an image with the nodata pixels trimmed. Assumes the nodata is
+	at the bottom and right of the image, and thus can only be used on satellite
+	images.
+	"""
 	# the dimensions of the image
 	height, width, bands = image.shape
 	newHeight, newWidth = 0, 0

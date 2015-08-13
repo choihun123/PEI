@@ -6,8 +6,8 @@ import image
 """
 This method will use mlpy's Maximum Likelihood Classifier to perform a basic
 clustering on the TIF files in folder. The training data is supplied in the 
-format "T[image name].SHP" and quality testing (error-rating) data in the format 
-"Q[image name].SHP". The parameters perform the following:
+format "T[image name].tif" and quality testing (error-rating) data in the format
+"Q[image name].tif". The parameters perform the following:
 
 folder - path to the folder that has the TIF files
 images - list of images derived from clustering
@@ -27,6 +27,10 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 		sys.exit("Error: given path is not a directory")
 	if not 1 <= k <= 6:
 		sys.exit("Error: k must be between 1 and 6 (inclusive)")
+	if not down >= 0:
+		sys.exit("Error: downsampling rate cannot be negative")
+	if not high >= 0:
+		sys.exit("Error: high cannot be negative")
 
 	# Maximum likelihood classifier object
 	ml = mlpy.MaximumLikelihoodC()
@@ -36,19 +40,24 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 	# the magnitude of down sampling
 	sample = 2**down
 
-	# iterate through all T (training) SHP files
+	# iterate through all T (training) TIF files
 	for name in os.listdir(folder):
-		if not name.endswith(".shp") or not name.startswith("T"):
+		if not name.endswith(".tif") or not name.startswith("T"):
 			continue
 
-		# iterate through all images and find the images with training data
+		# iterate through all images and find the image with training data
 		for img in images:
 			if img.name not in name:
 				continue
 
+			# path to training polygon TIF and shapefile
+			trainImage = os.path.join(folder, name)
+			trainSHPFile = os.path.join(folder, name[:9] + '.shp')
+
 			# lists to be used to find coordinates and type of the pixels
-			filePath = os.path.join(folder, name)
-			trainX, trainY, trainClass = image.readShapefile(filePath)
+			trainX, trainY, trainClass = image.readPolygonTIF(trainImage, \
+														trainSHPFile, down)
+			image.showPolygons(img, trainX, trainY, trainClass)
 
 			# number of training pixels
 			length = len(trainX)
@@ -58,17 +67,24 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 
 			# get the values of the pixels that have been specified
 			for i in xrange(length):
-				train[i, :] = img.array[trainY[i]/sample, trainX[i]/sample, :]
+				train[i, :] = img.array[trainY[i], trainX[i], :]
 
 			# append this training data to the overall training data
 			allTrain = np.append(allTrain, train, axis=0)
 			allClass = np.append(allClass, trainClass)
+
+			# dont bother iterating through the rest of the images
+			break
+
+	# if allClass or allTrain is empty, then no training data in the directory
+	if allClass.size == 0 or allTrain.size == 0:
+		sys.exit("Error: no training data in directory")
 			
 	# train the model
 	ml.learn(allTrain, allClass)
 
 	# create a data array to store the images in a classify-able format
-	data = np.zeros([high/sample*len(images), 4])
+	data = np.zeros([high*len(images)/sample**2, 4])
 	count = 0
 
 	# iterate through images and fill the data array
@@ -76,13 +92,13 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 		h, w,_ = img.array.shape
 		for i in xrange(h):
 			for j in xrange(w):
-				# put the whole image into data
-				data[count, :] = img.array[i, j, :]
-				count += 1
+				try:
+					# put the whole image into data
+					data[count, :] = img.array[i, j, :]
+					count += 1
 
-				# check that data is big enough
-				if count > high/sample:
-					sys.exit("Error: the highest resolution is too small")
+				except IndexError:
+					sys.exit("Error: high is too small")
 
 	# trim the unused part of data off
 	data = data[:count, :]
@@ -98,9 +114,9 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 	one, two, three, four, five, six = (0 for i in xrange(6))
 	total = 0  # total number of test pixels
 
-	# iterate through all Q (quality test) SHP files
+	# iterate through all Q (quality test) TIF files
 	for name in os.listdir(folder):
-		if not name.endswith(".shp") or not name.startswith("Q"):
+		if not name.endswith(".tif") or not name.startswith("Q"):
 			continue
 
 		# iterate through all images and find the images with training data
@@ -108,17 +124,25 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			if img.name not in name:
 				continue
 
+			# path to testing polygon TIF and shapefile
+			testImage = os.path.join(folder, name)
+			testSHPFile = os.path.join(folder, name[:9] + '.shp')
+
 			# lists to be used to find coordinates and type of the pixels
-			filePath = os.path.join(folder, name)
-			testX, testY, testClass = image.readShapefile(filePath)
+			testX, testY, testClass = image.readPolygonTIF(testImage, \
+														testSHPFile, down)
+			image.showPolygons(img, testX, testY, testClass)
 
 			# update total number of test pixels
 			total += testClass.size
 
+			# dimensions of image
+			_, w,_ = img.array.shape
+
 			# iterate through all the test pixels
 			for i in xrange(testClass.size):
 				# check if the pixel is correctly classified
-				coord = (testY[i]*w + testX[i]) / sample
+				coord = testY[i]*w + testX[i]
 				if testClass[i] != results[coord]:
 					# if incorrect, figure out which cluster it's in and 
 					# increment the error count of corresponding cluster
@@ -135,6 +159,10 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 						five += 1
 					elif error == 5:
 						six += 1
+
+	# if total is 0 then no quality test rasters are in the directory
+	if total == 0:
+		sys.exit("Error: no quality testing data in directory") 
 
 	# save the error rates in image object
 	image.Image.error1 = float(one)/total
