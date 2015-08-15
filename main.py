@@ -2,6 +2,7 @@ import sys, os
 from translate import translate
 from cluster import cluster
 from classify import classify
+from mask import createMask
 
 if __name__ == '__main__':
 	# verify folder path
@@ -23,9 +24,15 @@ if __name__ == '__main__':
 	allImages = classify(path, allImages, show=True)
 	#allImages = classify(path, allImages, high)
 
-	# calculate error rates
+	# iteratively classify new training data based on errors
+	#while True:
+		# if the classification is satisfactory, stop iterating process
 
-	# based on error rates, re-classify with more emphasis on less correct
-	# cluster types
 
-	# calculate error rates again
+		# otherwise, more training data must be provided. 
+		# based on error rates, provide user with a mask to load onto QGIS
+	createMask(path, allImages)
+
+		# wait for the user to create more training files based on mask
+
+		# reclassify

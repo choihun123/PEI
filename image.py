@@ -13,25 +13,36 @@ object holds the name, file path, raster as a numpy array in OpenCV
 format (Height,Width,Bands), and up to 6 cluster ratios.
 """
 class Image:
-	# error rates for each cluster
-	error1 = 0.0
-	error2 = 0.0
-	error3 = 0.0
-	error4 = 0.0
-	error5 = 0.0
-	error6 = 0.0
-
-	def __init__(self, name, path):
+	def __init__(self, name, path, k):
 		self.name = name								# name of image
 		self.path = path								# path of image
 		self.array,_ = OrthoImage.load(path)            # numpy array of raster
-		self.label = None								# clusters of image
-		self.cluster1 = 0.0 						    # cluster1 ratio
-		self.cluster2 = 0.0  							# cluster2 ratio
-		self.cluster3 = 0.0  							# cluster3 ratio
-		self.cluster4 = 0.0  							# cluster4 ratio
-		self.cluster5 = 0.0  							# cluster5 ratio
-		self.cluster6 = 0.0  							# cluster6 ratio
+		self.label = None								# clustering of image
+		self.cover = np.zeros(k)						# cover rates of cluster
+		self.error = np.zeros(k)						# error rates of cluster
+
+def coverRate(images, order, k):
+	""" 
+	Saves the cover rate of each type of cluster into each Image object and
+	prints the rates.
+	"""
+	o = order
+
+	# iterate through each image
+	for img in images:
+		h, w,_ = img.array.shape
+		total = h*w
+
+		# find the cover rates of each cluster
+		for i in xrange(k):
+			img.cover[i] = (np.sum(img.label==o[i]))/total
+
+		# print the cluster ratios, excluding empty ones
+		print "Cover rates of "+img.name+": "
+		for i in xrange(k):
+			if img.cover[i] != 0.0:
+				print "cluster"+str(i+1)+": "+str(img.cover[i])
+		print
 
 def GDAL2OpenCV(image):
 	""" Converts a GDAL-generated numpy array into a OpenCV numpy array"""
@@ -95,35 +106,6 @@ def pyramid(image, N):
 		image = cv2.pyrDown(image)
 	return image
 
-def ratio(images, order):
-	""" Saves the ratio of each type of cluster into each Image object """
-	o = order
-
-	# iterate through each image
-	for image in images:
-		h, w,_ = image.array.shape
-		total = h*w
-
-		# find the ratios of each cluster
-		try:
-			image.cluster1 = (np.sum(image.label==o[0]))/total
-			image.cluster2 = (np.sum(image.label==o[1]))/total
-			image.cluster3 = (np.sum(image.label==o[2]))/total
-			image.cluster4 = (np.sum(image.label==o[3]))/total
-			image.cluster5 = (np.sum(image.label==o[4]))/total
-			image.cluster6 = (np.sum(image.label==o[5]))/total
-		except IndexError:
-			pass
-
-		# print the cluster ratios, excluding empty ones
-		print "Ratios of "+image.name+": ",
-		for v in sorted(vars(image)):
-			if "cluster" in v:
-				value = getattr(image, v)
-				if value != 0.0:
-					print str(value)+", ",
-		print '\n'
-
 def readPolygonTIF(polygonTIF, shpfile, down):
 	"""
 	Returns the x, y coordinates of the pixels in lists as well as the class 
@@ -156,7 +138,7 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 	# iterate through the entire polyImage
 	for i in xrange(h):
 		for j in xrange(w):
-			# if the value of the pixel is 255(crop) then add to the lists/array
+			# if the value of the pixel is 255(crop) then add to the lists
 			# as a crop pixel
 			if polyImage[i, j] >= 255/sample:
 				x.append(j + lx)
@@ -249,9 +231,9 @@ def showMultClassification(results, images):
 def showMultClusters(images, order):
 	""" Displays all the clusterings """
 	# iterate through each image to display
-	for image in images:
+	for img in images:
 		# show individual clustering
-		showClusters(image, order)
+		showClusters(img, order)
 
 	cv2.waitKey(0)
 	cv2.destroyAllWindows()
@@ -285,10 +267,10 @@ def showPolygons(image, x, y, classes):
 
 def sortClusters(centroids):
 	""" Sorts the clusters in order from highest to lowest """
-	k, dim = centroids.shape
+	k,_ = centroids.shape
 
 	# create numpy array of sums of dimensions of each centroid
-	sums = np.zeros([k])
+	sums = np.zeros(k)
 	for i in xrange(k):
 		sums[i] = np.sum(centroids[i])
 
@@ -299,12 +281,12 @@ def splitLabel(images, label):
 	""" Splits the label array so each image has its own label array """
 	# iterate through each image
 	count = 0
-	for image in images:
+	for img in images:
 		# properties of this image
-		h, w,_ = image.array.shape
+		h, w,_ = img.array.shape
 
 		# find the label array for this image
-		image.label = label[count:(count + h*w)]
+		img.label = label[count:(count + h*w)]
 
 		# increment by the number of pixels in the previous image
 		count += h*w
@@ -312,8 +294,8 @@ def splitLabel(images, label):
 def trimNodata(image):
 	"""
 	Returns an image with the nodata pixels trimmed. Assumes the nodata is
-	at the bottom and right of the image, and thus can only be used on satellite
-	images.
+	at the bottom and right of the image, and thus can only be used on 
+	satellite images.
 	"""
 	# the dimensions of the image
 	height, width, bands = image.shape
@@ -323,13 +305,13 @@ def trimNodata(image):
 	for i in xrange(height-1, 0, -1):
 		# assuming the nodata is always from the far edge, find the index where
 		# image is no longer nodata.
-		if (image[i, 0]!=np.array([0,0,0,0])).all():
+		if not np.array_equal(image[i, 0], np.array([0,0,0,0])):
 			newHeight = i + 1
 			break
 
 	for i in xrange(width-1, 0, -1):
 		# find index where image is no longer nodata
-		if (image[0, i]!=np.array([0,0,0,0])).all():
+		if not np.array_equal(image[0, i], np.array([0,0,0,0])):
 			newWidth = i + 1
 			break
 

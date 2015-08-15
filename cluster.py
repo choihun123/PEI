@@ -11,7 +11,8 @@ folder - path to the folder that has the TIF files
 high   - number of pixels in the largest image. Default resolution is 9216x8192
 k      - number of clusters to form. Default is 4 clusters.
 down   - number of times to downsample the image. Default is 4 times.
-ratio  - calculate ratios of clusters for each image and print. Default is True.
+cover  - calculate cover rate of clusters for each image and print. 
+		 Default is True.
 plot2D - plot 2 axes of clusters. Default is False. Adjust Line 98 to 
 		 change axes.
 plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to 
@@ -19,18 +20,16 @@ plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to
 show   - show the clustering of each image. Default is True.
 
 The method returns the list of image objects so that the error-weighted 
-classifier can use the ratios. This method currently clusters based on the
+classifier can use the cover rates. This method currently clusters based on the
 four bands of the satellite images (BGRN). The clustering is saved in the .label
 data attribute of each image instance as a 1D array. 
 """
-def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
+def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
 			plot3D=False, show=True):
 	""" Perform a kmeans clustering on the TIF files in folder """
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")
-	if not 1 <= k <= 6:
-		sys.exit("Error: k must be between 1 and 6 (inclusive)")
 	if not down >= 0:
 		sys.exit("Error: downsampling rate cannot be negative")
 	if not high >= 0:
@@ -43,7 +42,8 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 	allImages = []
 
 	# data array for clustering. Initially maximal length
-	length = len([name for name in os.listdir(path) if name.endswith(".tif")])
+	length = len([name for name in os.listdir(path) if name.endswith(".tif")
+				and not name.startswith("T") and not name.startswith("Q")])
 	data = np.zeros([high*length, 4])
 
 	# used for indexing
@@ -58,7 +58,7 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 		filePath = os.path.join(path, name)
 		
 		# load a TIF file
-		tif = image.Image(name, filePath)
+		tif = image.Image(name, filePath, k)
 		if tif.array is None:
 			sys.exit("Error: could not open raster")
 
@@ -105,9 +105,9 @@ def cluster(folder, high=75497472, k=4, down=4, ratio=True, plot2D=False,
 	# for cluster consistency between runs
 	order = image.sortClusters(centroids)
 
-	# save and print the ratio of each type of cluster in each Image
-	if ratio:
-		image.ratio(allImages, order)
+	# save and print the cover rate of each type of cluster in each Image
+	if cover:
+		image.coverRate(allImages, order, k)
 
 	# plot graphs of clustering
 	if plot2D:

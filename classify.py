@@ -17,8 +17,8 @@ down   - number of times the image has been downsampled. Default is 4 times.
 show   - show the classification of each image. Default is True.
 
 The method returns the list of image objects so that the error-based mask
-creator can use the error-ratings. The error rates are saved as class variables
-of the Image class. The classification is not saved. 
+creator can use the error-ratings. The error rates are saved as instance 
+variables. The classification itself is not saved. 
 """
 def classify(folder, images, high=75497472, k=4, down=4, show=True):
 	""" Runs MLPY's Maximum Likelihood Classification algorithm on the images"""
@@ -57,7 +57,7 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			# lists to be used to find coordinates and type of the pixels
 			trainX, trainY, trainClass = image.readPolygonTIF(trainImage, \
 														trainSHPFile, down)
-			image.showPolygons(img, trainX, trainY, trainClass)
+			#image.showPolygons(img, trainX, trainY, trainClass)
 
 			# number of training pixels
 			length = len(trainX)
@@ -110,19 +110,17 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 	if show:
 		image.showMultClassification(results, images)
 
-	# use the test pixels to calculate error rates for each cluster
-	one, two, three, four, five, six = (0 for i in xrange(6))
-	total = 0  # total number of test pixels
-
 	# iterate through all Q (quality test) TIF files
 	for name in os.listdir(folder):
 		if not name.endswith(".tif") or not name.startswith("Q"):
 			continue
 
-		# iterate through all images and find the images with training data
+		# iterate through all images and find the images with testing data
 		for img in images:
 			if img.name not in name:
 				continue
+			# error counter for each cluster
+			errorCount = np.zeros(k, dtype=float)
 
 			# path to testing polygon TIF and shapefile
 			testImage = os.path.join(folder, name)
@@ -131,13 +129,15 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			# lists to be used to find coordinates and type of the pixels
 			testX, testY, testClass = image.readPolygonTIF(testImage, \
 														testSHPFile, down)
-			image.showPolygons(img, testX, testY, testClass)
-
-			# update total number of test pixels
-			total += testClass.size
+			#image.showPolygons(img, testX, testY, testClass)
 
 			# dimensions of image
 			_, w,_ = img.array.shape
+
+			# if no testing pixels are in the Q TIF
+			if testClass.size == 0:
+				print "Warning: "+img.name+" quality testing data is empty"
+				break
 
 			# iterate through all the test pixels
 			for i in xrange(testClass.size):
@@ -147,45 +147,24 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 					# if incorrect, figure out which cluster it's in and 
 					# increment the error count of corresponding cluster
 					error = img.label[coord]
-					if error == 0:
-						one += 1
-					elif error == 1:
-						two += 1
-					elif error == 2:
-						three += 1
-					elif error == 3:
-						four += 1
-					elif error == 4:
-						five += 1
-					elif error == 5:
-						six += 1
+					errorCount[error] += 1
 
-	# if total is 0 then no quality test rasters are in the directory
-	if total == 0:
-		sys.exit("Error: no quality testing data in directory") 
+			# save the error rates in image object
+			for i in xrange(k):
+				img.error[i] = errorCount[i]/testClass.size
 
-	# save the error rates in image object
-	image.Image.error1 = float(one)/total
-	image.Image.error2 = float(two)/total
-	image.Image.error3 = float(three)/total
-	image.Image.error4 = float(four)/total
-	image.Image.error5 = float(five)/total
-	image.Image.error6 = float(six)/total
-	
-	# print error rate for each cluster and total error rate
-	if one != 0:
-		print "Cluster 1: " + str(image.Image.error1)
-	if two != 0:
-		print "Cluster 2: " + str(image.Image.error2)
-	if three != 0:
-		print "Cluster 3: " + str(image.Image.error3)
-	if four != 0:
-		print "Cluster 4: " + str(image.Image.error4)
-	if five != 0:
-		print "Cluster 5: " + str(image.Image.error5)
-	if six != 0:
-		print "Cluster 6: " + str(image.Image.error6)
-	totalError = one + two + three + four + five + six
-	print "Total error rate: " + str(float(totalError)/total)
-	
+			# print error rate for each cluster
+			print "Error rates of "+img.name+": "
+			for i in xrange(k):
+				if img.error[i] != 0.0:
+					print "cluster"+str(i+1)+": "+str(img.error[i])
+
+			# total error rate for image
+			totalError = np.sum(errorCount)
+			print "Total error rate: " + \
+				  str(float(totalError)/testClass.size) + '\n'
+
+			# dont bother looking at other images
+			break
+
 	return images
