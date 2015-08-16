@@ -41,7 +41,7 @@ def coverRate(images, order, k):
 		print "Cover rates of "+img.name+": "
 		for i in xrange(k):
 			if img.cover[i] != 0.0:
-				print "cluster"+str(i+1)+": "+str(img.cover[i])
+				print "cluster"+str(i)+": "+str(img.cover[i])
 		print
 
 def GDAL2OpenCV(image):
@@ -108,15 +108,15 @@ def pyramid(image, N):
 
 def readPolygonTIF(polygonTIF, shpfile, down):
 	"""
-	Returns the x, y coordinates of the pixels in lists as well as the class 
-	labels in a numpy array based off the polygonTIF. polygonTIF will be 
+	Returns the x, y coordinates of the pixels as well as the class 
+	labels in numpy arrays based off the polygonTIF. polygonTIF will be 
 	effectively downsampled in this function, and thus so are x, y, and class.
 	"""
 	sample = 2**down
 
-	# lists/array to be used to find coordinates and type of the pixels
-	x = []
-	y = []
+	# arrays to be used to find coordinates and type of the pixels
+	x = np.zeros(0)
+	y = np.zeros(0)
 	classes = np.zeros(0)
 
 	# read in the polygonImage
@@ -138,18 +138,18 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 	# iterate through the entire polyImage
 	for i in xrange(h):
 		for j in xrange(w):
-			# if the value of the pixel is 255(crop) then add to the lists
+			# if the value of the pixel is 255(crop) then add to the arrays
 			# as a crop pixel
 			if polyImage[i, j] >= 255/sample:
-				x.append(j + lx)
-				y.append(i + uy)
+				x = np.append(x, j + lx)
+				y = np.append(y, i + uy)
 				classes = np.append(classes, 1)
 
-			# else if the value of the pixel is 1 (noncrop) then add to lists
+			# else if the value of the pixel is 1 (noncrop) then add to arrays
 			# as a noncrop pixel
 			elif polyImage[i, j] == 1:
-				x.append(j + lx)
-				y.append(i + uy)
+				x = np.append(x, j + lx)
+				y = np.append(y, i + uy)
 				classes = np.append(classes, 2)
 
 	return x, y, classes

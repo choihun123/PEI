@@ -1,12 +1,18 @@
 import subprocess as sp
 import sys, os
 
+""" 
+This method uses GDAL_TRANSLATE to convert all the NITFs in specified 
+directory into TIFs. Uses extra cache memory and baseline profile. The 
+parameter performs the following:
+
+folder - path to the directory that has the TIF files
+
+This method returns the number of pixels of the largest image, which is used
+in the cluster.py and classify.py.
+"""
 def translate(folder):
-	""" 
-	Uses GDAL_TRANSLATE to convert all the NITFs in folder into TIFs. Uses
-	extra cache memory and baseline profile.
-	Returns the number of pixels of the largest iamge.
-	"""
+	
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")

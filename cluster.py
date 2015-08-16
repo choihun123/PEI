@@ -7,7 +7,7 @@ import image
 This method will use scikit-learn's KMeans() to perform a clustering on all 
 TIF files in the specified folder. The parameters perform the following:
 
-folder - path to the folder that has the TIF files
+folder - path to the directory that has the TIF files
 high   - number of pixels in the largest image. Default resolution is 9216x8192
 k      - number of clusters to form. Default is 4 clusters.
 down   - number of times to downsample the image. Default is 4 times.
@@ -19,7 +19,7 @@ plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to
 		 change axes.
 show   - show the clustering of each image. Default is True.
 
-The method returns the list of image objects so that the error-weighted 
+This method returns the list of image objects so that the error-weighted 
 classifier can use the cover rates. This method currently clusters based on the
 four bands of the satellite images (BGRN). The clustering is saved in the .label
 data attribute of each image instance as a 1D array. 
@@ -30,9 +30,11 @@ def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")
-	if not down >= 0:
+	if k < 0:
+		sys.exit("Error: k cannot be negative")
+	if down < 0:
 		sys.exit("Error: downsampling rate cannot be negative")
-	if not high >= 0:
+	if high < 0:
 		sys.exit("Error: high cannot be negative")
 
 	# path to image folder
@@ -43,7 +45,8 @@ def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
 
 	# data array for clustering. Initially maximal length
 	length = len([name for name in os.listdir(path) if name.endswith(".tif")
-				and not name.startswith("T") and not name.startswith("Q")])
+				and not name.startswith("T") and not name.startswith("Q")
+				and not name.startswith("M")])
 	data = np.zeros([high*length, 4])
 
 	# used for indexing
@@ -51,9 +54,9 @@ def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
 
 	# iterate through all the files in the directory
 	for name in os.listdir(path):
-		# ignore hidden files and training/test TIF files and non-TIF files 
+		# ignore hidden files and training/test/mask TIF files and non-TIF files 
 		if name.startswith('.') or name.startswith("T") or name.startswith("Q")\
-			or not name.endswith(".tif"):
+			or not name.endswith(".tif") or name.startswith("M"):
 			continue
 		filePath = os.path.join(path, name)
 		

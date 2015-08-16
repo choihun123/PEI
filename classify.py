@@ -9,27 +9,25 @@ clustering on the TIF files in folder. The training data is supplied in the
 format "T[image name].tif" and quality testing (error-rating) data in the format
 "Q[image name].tif". The parameters perform the following:
 
-folder - path to the folder that has the TIF files
-images - list of images derived from clustering
+folder - path to the directory that has the TIF files
+images - list of all image objects
 high   - number of pixels in the largest image. Default resolution is 9216x8192
 k      - number of clusters formed. Default is 4 clusters.
 down   - number of times the image has been downsampled. Default is 4 times.
 show   - show the classification of each image. Default is True.
 
-The method returns the list of image objects so that the error-based mask
-creator can use the error-ratings. The error rates are saved as instance 
-variables. The classification itself is not saved. 
+This method returns the list of image objects so that the error-based mask
+creator can use the error-ratings. The method also returns the classification
+results. The error rates are saved as instance variables. 
 """
 def classify(folder, images, high=75497472, k=4, down=4, show=True):
 	""" Runs MLPY's Maximum Likelihood Classification algorithm on the images"""
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")
-	if not 1 <= k <= 6:
-		sys.exit("Error: k must be between 1 and 6 (inclusive)")
-	if not down >= 0:
+	if down < 0:
 		sys.exit("Error: downsampling rate cannot be negative")
-	if not high >= 0:
+	if high < 0:
 		sys.exit("Error: high cannot be negative")
 
 	# Maximum likelihood classifier object
@@ -60,7 +58,7 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			#image.showPolygons(img, trainX, trainY, trainClass)
 
 			# number of training pixels
-			length = len(trainX)
+			length = trainX.shape[0]
 
 			# create training data
 			train = np.zeros([length, 4], dtype=np.uint16)
@@ -157,7 +155,7 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			print "Error rates of "+img.name+": "
 			for i in xrange(k):
 				if img.error[i] != 0.0:
-					print "cluster"+str(i+1)+": "+str(img.error[i])
+					print "cluster"+str(i)+": "+str(img.error[i])
 
 			# total error rate for image
 			totalError = np.sum(errorCount)
@@ -167,4 +165,4 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			# dont bother looking at other images
 			break
 
-	return images
+	return images, results

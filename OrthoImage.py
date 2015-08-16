@@ -32,11 +32,13 @@ def save(image, transform, filename, fmt = "GTiff"):
 	driver = gdal.GetDriverByName(fmt) # check if supports create? or is None?
 	size = np.shape(image)
 	dataset = driver.Create(filename, size[2], size[1], size[0], gdal.GDT_Byte)
+	"""
 	dataset.SetGeoTransform([transform.GeoOffset[0],   transform.GeoTform[0, 0], \
                               transform.GeoTform[0, 1], transform.GeoOffset[1], \
                               transform.GeoTform[1, 0], transform.GeoTform[1, 1]\
                              ])
 	dataset.SetProjection(transform.Projection)
+	"""
 	for i in range(size[0]):
 		dataset.GetRasterBand(i + 1).WriteArray(image[i])
 
