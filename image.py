@@ -139,8 +139,8 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 	for i in xrange(h):
 		for j in xrange(w):
 			# if the value of the pixel is 255(crop) then add to the arrays
-			# as a crop pixel
-			if polyImage[i, j] >= 255/sample:
+			# as a crop pixel. The condition is adjusting for downsampling.
+			if polyImage[i, j] > 1:
 				x = np.append(x, j + lx)
 				y = np.append(y, i + uy)
 				classes = np.append(classes, 1)
