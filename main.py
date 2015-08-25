@@ -4,8 +4,9 @@ from cluster import cluster
 from classify import classify
 from mask import createMask
 from saveload import saveImages, loadImages
+import image
 
-if __name__ == '__main__':
+def main():
 	# validate input
 	if len(sys.argv) != 4:
 		sys.exit("Usage: main.py <directory> <k> <downsample rate>")
@@ -34,20 +35,43 @@ if __name__ == '__main__':
 	#allImages = cluster(path, high, show=True)
 
 	# classify crop fields
-	allImages, classification = classify(path, allImages, k=k, down=down)
-	#allImages = classify(path, allImages, high)
+	allImages, results, ml = classify(path, allImages, k=k, down=down)
+	#allImages, results, ml = classify(path, allImages, high, k=k, down=down)
+
+	# if the classification is satisfactory return results. Otherwise, 
+	# unsatisfactory results so create masks.
+	answer = raw_input("Is this classification satisfactory? y/n\n")
+	while True:
+		if answer == 'y':
+			return results
+		elif answer == 'n':
+			createMask(path, allImages)
+			break
+		else:
+			answer = raw_input("Please input 'y' or 'n' and press Enter\n")	
 
 	# iteratively classify new training data based on errors
-	#while True:
-		# if the classification is satisfactory, stop iterating process
-		# if error_rates are low enough:
-			# break
+	while True:
+		# calculate new number of polygons required for each cluster
+		image.calculatePolygons(allImages, k, N=20)
 
-		# otherwise, more training data must be provided. 
-		# based on error rates, provide user with a mask to load onto QGIS
-	createMask(path, allImages)
-
-		# wait for the user to create more training files based on mask
+		# wait for the user to create more training files based on calculations
+		print "Waiting for user to draw new training data."
+		raw_input("Press Enter to continue...")
 
 		# reclassify
-		#allImages, classification = classify(path, allImages, down=0)
+		allImages, results, ml = classify(path, allImages, k=k, ml=ml)
+		#allImages, results, ml = classify(path, allImages, high, k=k, ml=ml)
+
+		# if classification is satisfactory, then return results
+		answer = raw_input("Is this classification satisfactory? y/n\n")
+		while True:
+			if answer == 'y':
+				return results
+			elif answer == 'n':
+				break
+			else:
+				answer = raw_input("Please input 'y' or 'n' and press Enter\n")
+
+if __name__ == '__main__':
+	main()	

@@ -21,6 +21,21 @@ class Image:
 		self.cover = np.zeros(k)						# cover rates of cluster
 		self.error = np.zeros(k)						# error rates of cluster
 
+def calculatePolygons(images, k, N=20):
+	""" 
+	Calculates and prints the number of required polygons for each cluster. 
+	"""
+	# iterate through each image
+	for img in images:
+		# dot product of cover and error rate
+		total = np.dot(img.cover, img.error)
+
+		# print the number of polygons required for each cluster
+		print "Required T and Q polygons for " + img.name + ":"
+		for i in xrange(k):
+			print "cluster"+str(i)+": "+str(round(img.cover[i]*img.error[i]\
+																/total*N))
+
 def coverRate(images, order, k):
 	""" 
 	Saves the cover rate of each type of cluster into each Image object and
@@ -124,7 +139,8 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 	polyImage = GDAL2OpenCV(polyImage)
 
 	# downsample the polTIF
-	polyImage = pyramid(polyImage, down)
+	if down > 0:
+		polyImage = pyramid(polyImage, down)
 
 	# dimensions of TIF image
 	h, w = polyImage.shape

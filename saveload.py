@@ -19,6 +19,9 @@ def saveImages(folder, images, filename):
 		# save the whole images list using pickle
 		cPickle.dump(images, f, -1)
 
+	# notify user of successful save
+	print "List of images saved as '" + filename + "'"
+
 """
 This method is used to load the file previously created.
 
@@ -32,4 +35,8 @@ def loadImages(folder, filename):
 	# open the file to read binary file
 	with open(folder+filename, 'rb') as f:
 		# load the whole images list using pickle
-		return cPickle.load(f)
+		images = cPickle.load(f)
+
+	# notify user of successful load and return
+	print "List of images '" + filename + "' loaded"
+	return images

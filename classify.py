@@ -11,16 +11,18 @@ format "T[image name].tif" and quality testing (error-rating) data in the format
 
 folder - path to the directory that has the TIF files
 images - list of all image objects
+ml     - the Maximum Likelihood Classifier (MLC) object. Default is None. 
 high   - number of pixels in the largest image. Default resolution is 9216x8192
 k      - number of clusters formed. Default is 4 clusters.
-down   - number of times the image has been downsampled. Default is 4 times.
+down   - number of times the image has been downsampled. Default is 0 times.
 show   - show the classification of each image. Default is True.
 
-This method returns the list of image objects so that the error-based mask
-creator can use the error-ratings. The method also returns the classification
-results. The error rates are saved as instance variables. 
+This method returns the list of image objects, classification results, and
+the MLC object. It is expected that the MLC object will be entered as a 
+parameter in future calls of classify(). The error rates are saved 
+as instance variables in the image objects. 
 """
-def classify(folder, images, high=75497472, k=4, down=4, show=True):
+def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 	""" Runs MLPY's Maximum Likelihood Classification algorithm on the images"""
 	# validate input
 	if not os.path.isdir(folder):
@@ -31,7 +33,8 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 		sys.exit("Error: high cannot be negative")
 
 	# Maximum likelihood classifier object
-	ml = mlpy.MaximumLikelihoodC()
+	if ml is None:
+		ml = mlpy.MaximumLikelihoodC()
 	allTrain = np.zeros([0, 4], dtype=np.uint16)
 	allClass = np.zeros(0)
 
@@ -50,7 +53,8 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 
 			# path to training polygon TIF and shapefile
 			trainImage = os.path.join(folder, name)
-			trainSHPFile = os.path.join(folder, name[:9] + '.shp')
+			fileName,_ = os.path.splitext(name)
+			trainSHPFile = os.path.join(folder, fileName + '.shp')
 
 			# lists to be used to find coordinates and type of the pixels
 			trainX, trainY, trainClass = image.readPolygonTIF(trainImage, \
@@ -122,7 +126,8 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 
 			# path to testing polygon TIF and shapefile
 			testImage = os.path.join(folder, name)
-			testSHPFile = os.path.join(folder, name[:9] + '.shp')
+			fileName,_ = os.path.splitext(name)
+			testSHPFile = os.path.join(folder, fileName + '.shp')
 
 			# lists to be used to find coordinates and type of the pixels
 			testX, testY, testClass = image.readPolygonTIF(testImage, \
@@ -165,4 +170,4 @@ def classify(folder, images, high=75497472, k=4, down=4, show=True):
 			# dont bother looking at other images
 			break
 
-	return images, results
+	return images, results, ml
