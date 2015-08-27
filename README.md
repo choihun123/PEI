@@ -28,7 +28,7 @@ python main.py [-h] [-p] [-t] [-k #clusters] [-d downsample rate] [-s save file]
 2. Call **cluster()** with the folder path and the return value of translate() as parameters. This clusters all the TIFs using k-means++ on the four bands: B, G, R, Near-infrared. This will return a list of all images that contains information on the cover rates of clusters.
 3. Call **classify()** with folder path and the list of images as parameters. This searches for all training sites in the folder, trains the Maximum Likelihood Classifier, and then calculates the error rates based on the quality testing sites. This will return the list of images with the error rates of the Maximum Likelihood Classification, the classification results, and the MLC object.
 4. Based on the error-rates, now create masks of each of the clusters of the images so that the user can load the masks into GIS software and map the suggested number of polygons in each cluster.
-5. Repeat steps 2-4 until satisfactory results are available, now feeding the MLC object into classify to retain previous training.
+5. Repeat steps 2-4 until satisfactory results are available, now feeding the MLC object into **classify()** to retain previous training.
  
 
 ## Things to watch out for ##
