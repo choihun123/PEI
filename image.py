@@ -223,7 +223,7 @@ def showClusters(image, order):
 		it.iternext()
 
 	# display the image
-	cv2.imshow(image.name, cluster)
+	cv2.imshow("Clustering of " + image.name, cluster)
 
 def showMultClassification(results, images):
 	""" Displays all the classification results in images """

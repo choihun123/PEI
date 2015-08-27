@@ -11,8 +11,6 @@ folder - path to the directory that has the TIF files
 high   - number of pixels in the largest image. Default resolution is 9216x8192
 k      - number of clusters to form. Default is 4 clusters.
 down   - number of times to downsample the image. Default is 4 times.
-cover  - calculate cover rate of clusters for each image and print. 
-		 Default is True.
 plot2D - plot 2 axes of clusters. Default is False. Adjust Line 98 to 
 		 change axes.
 plot3D - plot 3 axes of clusters. Default is False. Adjust Line 100 to 
@@ -24,7 +22,7 @@ classifier can use the cover rates. This method currently clusters based on the
 four bands of the satellite images (BGRN). The clustering is saved in the .label
 data attribute of each image instance as a 1D array. 
 """
-def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
+def cluster(folder, high=75497472, k=4, down=4, plot2D=False, 
 			plot3D=False, show=True):
 	""" Perform a kmeans clustering on the TIF files in folder """
 	# validate input
@@ -109,8 +107,7 @@ def cluster(folder, high=75497472, k=4, down=4, cover=True, plot2D=False,
 	order = image.sortClusters(centroids)
 
 	# save and print the cover rate of each type of cluster in each Image
-	if cover:
-		image.coverRate(allImages, order, k)
+	image.coverRate(allImages, order, k)
 
 	# plot graphs of clustering
 	if plot2D:
