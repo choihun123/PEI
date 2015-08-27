@@ -9,7 +9,7 @@ import image
 def main(argv):
 	# figure out the input
 	try:
-		opts, args = getopt.getopt(argv, "hsk:d:l:")
+		opts, args = getopt.getopt(argv, "hptk:d:s:l:")
 	except getopt.GetoptError:
 		print "Usage: main.py [-h] [-p] [-t] [-k #clusters] "\
 				"[-d downsample rate] [-s save file] [-l load file] directory"
@@ -117,7 +117,7 @@ def main(argv):
 		allImages, results, ml = classify(folder, allImages, k=k, down=down, \
 											show=show)
 
-		# save the file
+		# save the files
 		if save is not None:
 			saveImages(folder, allImages, save)
 
