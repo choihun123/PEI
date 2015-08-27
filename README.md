@@ -33,5 +33,5 @@ python main.py [-h] [-p] [-t] [-k #clusters] [-d downsample rate] [-s save file]
 
 ## Things to watch out for ##
 
-* If using the **save** and **load** functions, it is imperative that you feed the TOY with the same K and downsample rate when you load it as you did when you saved it.
+* If using the **save** and **load** functions, it is imperative that you feed the TOY with the same K and downsample rate when you load it as you did when you saved it. Also, it is **HIGHLY RECOMMENDED** to use **save** and **load** on separate runs. IE don't use them together.
 * The higher the downsample rate, the smaller and faster everything will be, at the cost of accuracy.
