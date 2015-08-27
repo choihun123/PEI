@@ -35,6 +35,8 @@ def cluster(folder, high=75497472, k=4, down=4, plot2D=False,
 	if high < 0:
 		sys.exit("Error: high cannot be negative")
 
+	print "Clustering the images..."
+
 	# path to image folder
 	path = folder
 

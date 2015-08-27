@@ -32,6 +32,8 @@ def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 	if high < 0:
 		sys.exit("Error: high cannot be negative")
 
+	print "Classifying the images..."
+
 	# Maximum likelihood classifier object
 	if ml is None:
 		ml = mlpy.MaximumLikelihoodC()

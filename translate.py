@@ -12,11 +12,13 @@ This method returns the number of pixels of the largest image, which is used
 in the cluster.py and classify.py.
 """
 def translate(folder):
-	
+	""" Translate NITFs to TIFs """
 	# validate input
 	if not os.path.isdir(folder):
 		sys.exit("Error: given path is not a directory")
 
+	print " Translating NITFs to TIFs..."
+	
 	# counts number of NITFs
 	count = 0
 
