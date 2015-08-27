@@ -106,7 +106,7 @@ def main(argv):
 				answer = raw_input("Please input 'y' or 'n' and press Enter\n")	
 		
 	# if there is a save file ready for use
-	elif load is not None:
+	elif load is not None and save is None:
 		allImages = loadImages(folder, load)
 
 	else:
