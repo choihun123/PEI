@@ -10,7 +10,7 @@ import OrthoImage
 An image object and several methods required throughout the whole process of 
 clustering, classifying, and error-based training. The image 
 object holds the name, file path, raster as a numpy array in OpenCV 
-format (Height,Width,Bands), and up to 6 cluster ratios.
+format (Height,Width,Bands), cover rates, and error rates.
 """
 class Image:
 	def __init__(self, name, path, k):
@@ -33,8 +33,8 @@ def calculatePolygons(images, k, N=20):
 		# print the number of polygons required for each cluster
 		print "Required T and Q polygons for " + img.name + ":"
 		for i in xrange(k):
-			print "cluster"+str(i)+": "+str(round(img.cover[i]*img.error[i]\
-																/total*N))
+			print "cluster"+str(i)+": "+str(int(round(img.cover[i]*img.error[i]\
+																/total*N)))
 
 def coverRate(images, order, k):
 	""" 
@@ -143,7 +143,7 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 		polyImage = pyramid(polyImage, down)
 
 	# dimensions of TIF image
-	h, w = polyImage.shape
+	h, w,_ = polyImage.shape
 
 	# downsampled dimensions of the bounding box of the polygons
 	sf = shapefile.Reader(shpfile)

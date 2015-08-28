@@ -9,7 +9,10 @@ parameter performs the following:
 folder - path to the directory that has the TIF files
 
 This method returns the number of pixels of the largest image, which is used
-in the cluster.py and classify.py.
+in cluster.py and classify.py. 
+
+Can also call this script from the command line separately:
+python translate.py /Users/jsmith/folder
 """
 def translate(folder):
 	""" Translate NITFs to TIFs """
@@ -59,7 +62,7 @@ def translate(folder):
 if __name__ == "__main__":
 	# validate input
 	if len(sys.argv) != 2:
-		print 'usage: translate.py <path to folder with NITFs>'
+		print 'Usage: translate.py <path to folder with NITFs>'
 		sys.exit(2)
 
 	# counts number of NITFs

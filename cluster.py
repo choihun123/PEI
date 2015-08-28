@@ -20,7 +20,11 @@ show   - show the clustering of each image. Default is True.
 This method returns the list of image objects so that the error-weighted 
 classifier can use the cover rates. This method currently clusters based on the
 four bands of the satellite images (BGRN). The clustering is saved in the .label
-data attribute of each image instance as a 1D array. 
+instance variable of each image as a 1D array and can be accessed properly
+with the following formula:
+
+To access the point at (x, y):
+image.label[width*y + x]
 """
 def cluster(folder, high=75497472, k=4, down=4, plot2D=False, 
 			plot3D=False, show=True):

@@ -165,9 +165,8 @@ def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 					print "cluster"+str(i)+": "+str(img.error[i])
 
 			# total error rate for image
-			totalError = np.sum(errorCount)
-			print "Total error rate: " + \
-				  str(float(totalError)/testClass.size) + '\n'
+			totalError = np.sum(img.error)
+			print "Total error rate: " + str(totalError) + '\n'
 
 			# dont bother looking at other images
 			break
