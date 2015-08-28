@@ -1,6 +1,6 @@
 ## Dependencies ##
 
-To be able to run this TOY program once it is complete, you must have the following dependencies installed on your system:
+To be able to run this TOY program, you must have the following dependencies installed on your system:
 Python, numpy, sci-kit learn, matplotlib, GDAL, OpenCV, and shapefile. Ideally these are all installed with Homebrew or pip.
 
 ## Usage of TOY 
@@ -33,8 +33,8 @@ python main.py [-h] [-p] [-t] [-k #clusters] [-d downsample rate] [-s save file]
 ## Polygon drawing instructions ##
 1. Open QGIS. Open all the masks of one image and create a "New Shapefile layer" that contains polygons and name it "[Q or T][image name].shp". Note: do not include the final letter of the name. For example, if the mask is called "M06jun140a.tif" then you'd create "T06jun140.tif".
 2. Draw in the suggested number of polygons (or a multiple of the numbers) for each of the masks.
-When drawing polygons, assign the attribute 'id' to have value 255 if the polygon is a crop field, or 1 if the polygon is not a crop field.
-3. After drawing the polygons, use the "Rasterize" tool (found under Raster->Conversion) and use the file you made as the Input file, 'id' as the Attribute Field, then select and create a new file called "[Q or T][image name].tif". Click the option for "Raster resolution in map units per pixel". Press OK.
+When drawing polygons, assign the attribute 'id' to have value 255 if the polygon **is** a crop field, or 1 if the polygon **is not** a crop field.
+3. After drawing the polygons, use the "Rasterize" tool (found under Raster->Conversion) and use the file you made as the Input file, 'id' as the Attribute Field, then click "Select" to create a new file called "[Q or T][image name].tif". Click the option for "Raster resolution in map units per pixel". Press OK.
 4. If the new raster is just black, right-click the legend entry and go to Properties. Under style->band rendering, set the max to 255. The crop field polygons should be very visible, while the non-crop field polygons will still be invisible. If the crop field polygons still do not appear, something is wrong.
 4. Repeat this for all images. Then you are ready to continue with the TOY.
 
