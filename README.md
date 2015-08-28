@@ -39,9 +39,9 @@ When drawing polygons, assign the attribute 'id' to have value 255 if the polygo
 4. Repeat this for all images. Then you are ready to continue with the TOY.
 
 ## Things to watch out for ##
-
-* If using the **save** and **load** functions, it is imperative that you feed the TOY with the same K and downsample rate when you load it as you did when you saved it. Also, it is **HIGHLY RECOMMENDED** to use **save** and **load** on separate runs. IE don't use them together.
-* The higher the downsample rate, the smaller and faster everything will be, at the cost of accuracy.
+* K will default to 4 if no K is given in the command line. Downsample rate will default to 1. 
+* If using the **save** and **load** functions, it is imperative that you feed the TOY with the same K and downsample rate when you load it as you did when you saved it.
+* The higher the downsample rate, the smaller and faster everything will be, but at the cost of accuracy.
 * The mask files each represent one cluster of the image. Cluster 0 is denoted by 'a', Cluster 1 by 'b', etc.
 * At the stage where the user creates polygons, the user **MUST** save the files in the following formats:
  * Training data must be saved as "T[image name].shp". For example, "T06jun140.shp" is a valid name.
