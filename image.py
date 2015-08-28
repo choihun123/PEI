@@ -1,3 +1,6 @@
+#-------------------------------------------------------------------------------
+# Author: Hun Choi
+#-------------------------------------------------------------------------------
 from __future__ import division
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-
+#-------------------------------------------------------------------------------
+# Author: Hun Choi
+#-------------------------------------------------------------------------------
 import sys, os, getopt
 import numpy as np
 from translate import translate
@@ -115,7 +117,12 @@ def main(argv):
 	# translate the NITFs to TIFs if needed
 	###########################################################################
 	if trans:
+		# translate
 		high = translate(folder)
+
+		# give user time to make first batch of training/testing data
+		print "Waiting for user to draw first batch of training/testing data."
+		raw_input("Press Enter to continue...")
 		
 		# cluster the TIFs
 		allImages = cluster(folder, high, show=True)
@@ -149,10 +156,14 @@ def main(argv):
 
 		# print the error rates from before the save
 		for img in allImages:
+			# dont print anything if no error rates are calculated
+			if np.sum(img.error) == 0.0:
+				continue
+
+			# print error rates for each cluster
 			print "Error rates of "+img.name+": "
 			for i in xrange(k):
-				if img.error[i] != 0.0:
-					print "cluster"+str(i)+": "+str(img.error[i])
+				print "cluster"+str(i)+": "+str(img.error[i])
 
 			# total error rate for image
 			totalError = np.sum(img.error)
@@ -162,6 +173,10 @@ def main(argv):
 	# or if there is not a save file ready, and/or translation is not required
 	###########################################################################
 	else:
+		# give user time to make first batch of training/testing data
+		print "Waiting for user to draw first batch of training/testing data."
+		raw_input("Press Enter to continue...")
+
 		# cluster the TIFs
 		allImages = cluster(folder, show=show, k=k, down=down)
 	
@@ -192,8 +207,8 @@ def main(argv):
 		# calculate new number of polygons required for each cluster
 		image.calculatePolygons(allImages, k, N=20)
 
-		# wait for the user to create more training files based on calculations
-		print "Waiting for user to draw new training data."
+		# wait for the user to create more T and Q files based on calculations
+		print "Waiting for user to draw new training/testing data."
 		raw_input("Press Enter to continue...")
 
 		# reclassify

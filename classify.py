@@ -1,3 +1,6 @@
+#-------------------------------------------------------------------------------
+# Author: Hun Choi
+#-------------------------------------------------------------------------------
 import sys, os
 import mlpy
 import numpy as np
@@ -61,6 +64,8 @@ def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 			# lists to be used to find coordinates and type of the pixels
 			trainX, trainY, trainClass = image.readPolygonTIF(trainImage, \
 														trainSHPFile, down)
+			
+			# for debugging, uncomment to see polygons. red=crop green=non crop
 			#image.showPolygons(img, trainX, trainY, trainClass)
 
 			# number of training pixels
@@ -134,6 +139,8 @@ def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 			# lists to be used to find coordinates and type of the pixels
 			testX, testY, testClass = image.readPolygonTIF(testImage, \
 														testSHPFile, down)
+			
+			# for debugging, uncomment to see polygons. red=crop green=non crop
 			#image.showPolygons(img, testX, testY, testClass)
 
 			# dimensions of image
@@ -161,8 +168,7 @@ def classify(folder, images, ml=None, high=75497472, k=4, down=0, show=True):
 			# print error rate for each cluster
 			print "Error rates of "+img.name+": "
 			for i in xrange(k):
-				if img.error[i] != 0.0:
-					print "cluster"+str(i)+": "+str(img.error[i])
+				print "cluster"+str(i)+": "+str(img.error[i])
 
 			# total error rate for image
 			totalError = np.sum(img.error)
