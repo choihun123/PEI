@@ -1,3 +1,5 @@
+# Interactive/Algorithmic Crop Field Classifier #
+
 ## Dependencies ##
 
 To be able to run this TOY program, you must have the following dependencies installed on your system:
