@@ -1,4 +1,4 @@
-# Interactive/Algorithmic Crop Field Classifier #
+# Interactively-trained Algorithmic Crop Field Classifier #
 
 ## Dependencies ##
 
