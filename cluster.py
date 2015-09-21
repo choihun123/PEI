@@ -104,7 +104,7 @@ def cluster(folder, high=75497472, k=4, down=4, plot2D=False,
 	data = data[:count, :]
 
 	# perform kmeans clustering
-	clstr = KMeans(n_clusters=k, n_jobs=-1)
+	clstr = KMeans(n_clusters=k, n_jobs=1)
 	clstr.fit(data)
 	label = clstr.labels_
 	centroids = clstr.cluster_centers_

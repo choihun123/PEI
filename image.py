@@ -146,7 +146,10 @@ def readPolygonTIF(polygonTIF, shpfile, down):
 		polyImage = pyramid(polyImage, down)
 
 	# dimensions of TIF image
-	h, w,_ = polyImage.shape
+	if len(polyImage.shape) == 3:
+		h, w,_ = polyImage.shape
+	elif len(polyImage.shape) == 2:
+		h, w = polyImage.shape
 
 	# downsampled dimensions of the bounding box of the polygons
 	sf = shapefile.Reader(shpfile)
@@ -195,6 +198,7 @@ def showClassification(results, image):
 		it.iternext()
 
 	cv2.imshow("Classification of " + image.name, classify)
+	#cv2.imwrite("/Users/hunchoi/Desktop", classify)
 
 def showClusters(image, order):
 	""" Displays one visual representation of the clustering """
@@ -227,6 +231,7 @@ def showClusters(image, order):
 
 	# display the image
 	cv2.imshow("Clustering of " + image.name, cluster)
+	#cv2.imwrite("/Users/hunchoi/Desktop", cluster)
 
 def showMultClassification(results, images):
 	""" Displays all the classification results in images """
